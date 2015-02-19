@@ -21,7 +21,7 @@ You can set a keyboard shortcut in System Preferences.
 
 ### Requirements
 
-The plugin needs Glyphs 2.0 or higher, running on OS X 10.9 or later. I can only test it in current OS versions, and I am pretty sure it will not work in versions of Mac OS X older than 10.7.
+The plugin needs Glyphs 2.0 or higher, running on OS X 10.9 or later. It does NOT work with Glyphs 1.x.
 
 ### License
 
