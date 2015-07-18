@@ -11,7 +11,7 @@ path = MainBundle.bundlePath() + "/Contents/Scripts"
 if not path in sys.path:
 	sys.path.append( path )
 
-import GlyphsApp
+import GlyphsApp, math
 
 GlyphsReporterProtocol = objc.protocolNamed( "GlyphsReporter" )
 
@@ -106,15 +106,29 @@ class Crosshair ( NSObject, GlyphsReporterProtocol ):
 			if currentController:
 				tool = currentController.toolDrawDelegate()
 				if tool.isKindOfClass_( NSClassFromString("GlyphsToolSelect") ):
+					# get current tool/pointer state:
 					crossHairCenter = tool.valueForKey_("draggCurrent").pointValue()
 					mouseIsDragging = tool.dragging()
+					
 					if crossHairCenter.x < NSNotFound and mouseIsDragging:
-						currentScale = self.getScale()
+						# determine italic angle:
+						try:
+							thisFont = Layer.parent.parent
+							thisMaster = thisFont.masters[Layer.associatedMasterId]
+							italicAngle = math.radians( thisMaster.italicAngle % 90.0 )
+						except:
+							italicAngle = 0.0
+						
+						# draw crosshair:
 						offset = 1000000
+						tangens = math.tan( italicAngle )
+						xOffset = tangens * offset
+						cursorOffset = tangens * crossHairCenter.y
+						currentScale = self.getScale()
 						crosshairPath = NSBezierPath.bezierPath()
-						crosshairPath.setLineWidth_(0.5/currentScale)
-						crosshairPath.moveToPoint_( NSPoint( crossHairCenter.x, -offset ) )
-						crosshairPath.lineToPoint_( NSPoint( crossHairCenter.x,  offset ) )
+						crosshairPath.setLineWidth_( 0.5 / currentScale )
+						crosshairPath.moveToPoint_( NSPoint( crossHairCenter.x - xOffset - cursorOffset, -offset ) )
+						crosshairPath.lineToPoint_( NSPoint( crossHairCenter.x + xOffset - cursorOffset,  offset ) )
 						crosshairPath.moveToPoint_( NSPoint( -offset, crossHairCenter.y ) )
 						crosshairPath.lineToPoint_( NSPoint(  offset, crossHairCenter.y ) )
 						NSColor.darkGrayColor().set()
