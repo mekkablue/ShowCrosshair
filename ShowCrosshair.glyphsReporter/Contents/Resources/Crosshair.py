@@ -113,9 +113,8 @@ class Crosshair ( NSObject, GlyphsReporterProtocol ):
 					if crossHairCenter.x < NSNotFound and mouseIsDragging:
 						# determine italic angle:
 						try:
-							thisFont = Layer.parent.parent
-							thisMaster = thisFont.masters[Layer.associatedMasterId]
-							italicAngle = math.radians( thisMaster.italicAngle % 90.0 )
+							thisMaster = Layer.associatedFontMaster()
+							italicAngle = math.radians( thisMaster.italicAngle )
 						except:
 							italicAngle = 0.0
 						
