@@ -104,8 +104,8 @@ class Crosshair ( NSObject, GlyphsReporterProtocol ):
 		try:
 			currentController = self.controller.view().window().windowController()
 			if currentController:
-				tool = currentController.toolDrawDelegate()
-				if tool.isKindOfClass_( NSClassFromString("GlyphsToolSelect") ):
+				tool = currentController.toolEventHandler()
+				try:
 					# get current tool/pointer state:
 					crossHairCenter = tool.valueForKey_("draggCurrent").pointValue()
 					mouseIsDragging = tool.dragging()
@@ -132,6 +132,8 @@ class Crosshair ( NSObject, GlyphsReporterProtocol ):
 						crosshairPath.lineToPoint_( NSPoint(  offset, crossHairCenter.y ) )
 						NSColor.darkGrayColor().set()
 						crosshairPath.stroke()
+				except:
+					pass
 		except Exception as e:
 			self.logToConsole( "drawBackgroundForLayer_: %s" % str(e) )
 	
