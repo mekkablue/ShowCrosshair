@@ -1,10 +1,12 @@
 # ShowCrosshair.glyphsReporter
 
-This is a plugin for the [Glyphs font editor](http://glyphsapp.com/) by Georg Seifert. Depending on your crosshair setting, it shows a crosshair either always, or while you drag your mouse pointer. Switch between states via the conext menu: right click and select *Toggle Crosshair* (de: *Fadenkreuz umschalten*).
-
-After installation, it will add the menu item *View > Show Crosshair* (de: *Zeige Fadenkreuz*). You can set a keyboard shortcut in System Preferences.
+This is a plugin for the [Glyphs font editor](http://glyphsapp.com/) by Georg Seifert. After installation, it will add the menu item *View > Show Crosshair* (de: *Zeige Fadenkreuz*). You can set a keyboard shortcut in System Preferences.
 
 ![Crosshair.](ShowCrosshair.png "Show Crosshair Screenshot")
+
+Depending on your crosshair setting, it shows a crosshair either always, or while you drag your mouse pointer. Switch between states via the context menu: right click and select *Toggle Crosshair* (de: *Fadenkreuz umschalten*).
+
+![ToggleCrosshair](ToggleCrosshair.png "Toggle Crosshair modes")
 
 ### Installation
 
