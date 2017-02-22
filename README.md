@@ -2,7 +2,7 @@
 
 This is a plugin for the [Glyphs font editor](http://glyphsapp.com/) by Georg Seifert. After installation, it will add the menu item *View > Show Crosshair* (de: *Zeige Fadenkreuz*). You can set a keyboard shortcut in System Preferences.
 
-![Crosshair.](ShowCrosshair.png "Show Crosshair Screenshot")
+![Crosshair](ShowCrosshair.png "Show Crosshair Screenshot")
 
 Depending on your crosshair setting, it shows a crosshair either always, or while you drag your mouse pointer. Switch between states via the context menu: right click and select *Toggle Crosshair* (de: *Fadenkreuz umschalten*).
 
@@ -10,7 +10,7 @@ Depending on your crosshair setting, it shows a crosshair either always, or whil
 
 You can also display the crosshair coordinates in the lower left corner of the active tab by choosing *Toggle Coordinates* (de: *Koordinaten ein/ausblenden*):
 
-![Coordinates](Coordinates.png "Show Coordinate")
+![Coordinates](Coordinates.png "Coordinates are displayed in the lower left corner of the Edit view")
 
 By default, the coordinate numbers are displayed at a font size of 10 points. Change their size by pasting this line of code into the Macro Window (*Window > Macro Panel*) and pressing the *Run* button:
 
