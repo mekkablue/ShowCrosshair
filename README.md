@@ -8,6 +8,16 @@ Depending on your crosshair setting, it shows a crosshair either always, or whil
 
 ![ToggleCrosshair](ToggleCrosshair.png "Toggle Crosshair modes")
 
+You can also display the crosshair coordinates in the lower left corner of the active tab by choosing *Toggle Coordinates* (de: *Koordinaten ein/ausblenden*):
+
+![Coordinates](Coordinates.png "Show Coordinate")
+
+By default, the coordinate numbers are displayed at a font size of 10 points. Change their size by pasting this line of code into the Macro Window (*Window > Macro Panel*) and pressing the *Run* button:
+
+    Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] = 18.0
+
+Change the value (18.0 in this example) to the desired point size.
+
 ### Installation
 
 
@@ -24,7 +34,8 @@ or:
 
 1. Open a glyph in Edit View.
 2. Use *View > Show Crosshair* to toggle the display of the crosshair.
-3. Choose *Toggle Crosshair* from the contextmenu to switch between always on and only on while dragging.
+3. Choose *Toggle Crosshair* from the context menu to switch between always on and only on while dragging.
+4. Choose *Toggle Coordinates* from the context menu to turn the display of the crosshair coordinates on or off.
 
 ### Requirements
 

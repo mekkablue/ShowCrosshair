@@ -20,7 +20,9 @@ class ShowCrosshair(ReporterPlugin):
 	def settings(self):
 		self.menuName = Glyphs.localize({'en': u'Crosshair', 'de': u'Fadenkreuz'})
 		NSUserDefaults.standardUserDefaults().registerDefaults_({
-				"com.mekkablue.ShowCrosshair.universalCrosshair": 1
+				"com.mekkablue.ShowCrosshair.universalCrosshair": 1,
+				"com.mekkablue.ShowCrosshair.showCoordinates": 0,
+				"com.mekkablue.ShowCrosshair.fontSize": 10.0
 			})
 		# self.universalCrosshair = bool( Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"] )
 		
@@ -32,13 +34,18 @@ class ShowCrosshair(ReporterPlugin):
 				}), 
 				'action': self.toggleUniversalCrosshair
 			},
+			{
+				'name': Glyphs.localize({
+					'en': u'Toggle Coordinates',
+					'de': u'Koordinaten ein/ausblenden'
+				}), 
+				'action': self.toggleCoordinates
+			}
 		]
 		
 	def background(self, layer):
-		currentController = self.controller
-		view = currentController.graphicView()
-		toolIsDragging = currentController.view().window().windowController().toolEventHandler().dragging()
-		crossHairCenter = view.getActiveLocation_(Glyphs.currentEvent())
+		toolIsDragging = self.controller.view().window().windowController().toolEventHandler().dragging()
+		crossHairCenter = self.mousePosition()
 		shouldDisplay = bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]) or toolIsDragging
 		if crossHairCenter.x < NSNotFound and shouldDisplay:
 			italicAngle = 0.0
@@ -62,6 +69,35 @@ class ShowCrosshair(ReporterPlugin):
 			crosshairPath.lineToPoint_( NSPoint(  offset, crossHairCenter.y ) )
 			NSColor.darkGrayColor().set()
 			crosshairPath.stroke()
+	
+	def mousePosition(self):
+		currentController = self.controller
+		view = currentController.graphicView()
+		mousePosition = view.getActiveLocation_(Glyphs.currentEvent())
+		return mousePosition
+	
+	def foregroundInViewCoords(self, layer):
+		if bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"]):
+			mousePosition = self.mousePosition()
+			coordinateText = "% 4i, % 4i" % (
+				round(mousePosition.x), 
+				round(mousePosition.y)
+			)
+			
+			fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
+			fontAttributes = { 
+				#NSFontAttributeName: NSFont.labelFontOfSize_(10.0),
+				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
+				NSForegroundColorAttributeName: NSColor.blackColor()
+			}
+			displayText = NSAttributedString.alloc().initWithString_attributes_(
+				unicode(coordinateText), 
+				fontAttributes
+			)
+			textAlignment = 0 # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
+			font = layer.parent.parent
+			lowerLeftCorner = font.currentTab.viewPort.origin
+			displayText.drawAtPoint_alignment_(lowerLeftCorner, textAlignment)
 
 	def mouseDidMove(self, notification):
 		self.controller.view().setNeedsDisplay_(True)
@@ -77,4 +113,7 @@ class ShowCrosshair(ReporterPlugin):
 	
 	def toggleUniversalCrosshair(self):
 		Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"] = int(not bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]))
+		
+	def toggleCoordinates(self):
+		Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"] = int(not bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"]))
 		
