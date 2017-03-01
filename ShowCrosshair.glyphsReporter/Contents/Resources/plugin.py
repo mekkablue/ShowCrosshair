@@ -44,9 +44,11 @@ class ShowCrosshair(ReporterPlugin):
 		]
 		
 	def background(self, layer):
-		toolIsDragging = self.controller.view().window().windowController().toolEventHandler().dragging()
+		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
+		toolIsDragging = toolEventHandler.dragging()
+		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 		crossHairCenter = self.mousePosition()
-		shouldDisplay = bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]) or toolIsDragging
+		shouldDisplay = (bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]) and not toolIsTextTool) or toolIsDragging
 		if crossHairCenter.x < NSNotFound and shouldDisplay:
 			italicAngle = 0.0
 			try:
@@ -71,13 +73,15 @@ class ShowCrosshair(ReporterPlugin):
 			crosshairPath.stroke()
 	
 	def mousePosition(self):
-		currentController = self.controller
-		view = currentController.graphicView()
+		view = self.controller.graphicView()
 		mousePosition = view.getActiveLocation_(Glyphs.currentEvent())
 		return mousePosition
 	
 	def foregroundInViewCoords(self, layer):
-		if bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"]):
+		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
+		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
+		
+		if bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"]) and not toolIsTextTool:
 			mousePosition = self.mousePosition()
 			coordinateText = "% 4i, % 4i" % (
 				round(mousePosition.x), 
@@ -95,12 +99,15 @@ class ShowCrosshair(ReporterPlugin):
 				fontAttributes
 			)
 			textAlignment = 0 # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
-			font = layer.parent.parent
-			lowerLeftCorner = font.currentTab.viewPort.origin
+			#font = layer.parent.parent
+			lowerLeftCorner = self.controller.viewPort.origin
 			displayText.drawAtPoint_alignment_(lowerLeftCorner, textAlignment)
 
 	def mouseDidMove(self, notification):
-		self.controller.view().setNeedsDisplay_(True)
+		if self.controller:
+			self.controller.view().setNeedsDisplay_(True)
+		else:
+			Glyphs.redraw()
 	
 	def willActivate(self):
 		Glyphs.addCallback(self.mouseDidMove, MOUSEMOVED)
@@ -109,6 +116,7 @@ class ShowCrosshair(ReporterPlugin):
 		try:
 			Glyphs.removeCallback(self.mouseDidMove, MOUSEMOVED)
 		except:
+			import traceback
 			NSLog(traceback.format_exc())
 	
 	def toggleUniversalCrosshair(self):
