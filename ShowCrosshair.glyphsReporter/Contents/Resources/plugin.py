@@ -81,7 +81,7 @@ class ShowCrosshair(ReporterPlugin):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 		
-		if bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"]) and not toolIsTextTool:
+		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showCoordinates"] and not toolIsTextTool:
 			mousePosition = self.mousePosition()
 			coordinateText = "% 4i, % 4i" % (
 				round(mousePosition.x), 
