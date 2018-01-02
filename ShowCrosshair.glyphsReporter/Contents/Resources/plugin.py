@@ -11,7 +11,7 @@
 #
 ###########################################################################################################
 
-
+from GlyphsApp import *
 from GlyphsApp.plugins import *
 import math
 
@@ -70,7 +70,7 @@ class ShowCrosshair(ReporterPlugin):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 		
-		if bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"]) and not toolIsTextTool:
+		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showCoordinates"] and not toolIsTextTool:
 			mousePosition = self.mousePosition()
 			coordinateText = "%4d, %4d" % (
 				round(mousePosition.x), 
