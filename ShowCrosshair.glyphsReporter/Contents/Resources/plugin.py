@@ -13,6 +13,7 @@
 
 from GlyphsApp import *
 from GlyphsApp.plugins import *
+from GlyphsApp.plugins import setUpMenuHelper
 import math
 
 class ShowCrosshair(ReporterPlugin):
