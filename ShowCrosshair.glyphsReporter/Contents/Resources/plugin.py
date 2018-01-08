@@ -170,5 +170,6 @@ class ShowCrosshair(ReporterPlugin):
 				setUpMenuHelper(contextMenu, contextMenus, self)
 		
 		except:
-			self.logError(traceback.format_exc())
+			import traceback
+			NSLog(traceback.format_exc())
 	
