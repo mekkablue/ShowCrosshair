@@ -31,7 +31,7 @@ class ShowCrosshair(ReporterPlugin):
 				"com.mekkablue.ShowCrosshair.fontSize": 10.0
 			})
 		# self.universalCrosshair = bool( Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"] )
-		
+		self.controller = None
 		
 	def background(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
