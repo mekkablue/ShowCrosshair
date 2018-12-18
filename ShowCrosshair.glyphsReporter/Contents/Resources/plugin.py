@@ -95,7 +95,7 @@ class ShowCrosshair(ReporterPlugin):
 
 	def mouseDidMove(self, notification):
 		if self.controller:
-			self.controller.view().setNeedsDisplay_(True)
+			self.controller.redraw()
 		else:
 			Glyphs.redraw()
 	
