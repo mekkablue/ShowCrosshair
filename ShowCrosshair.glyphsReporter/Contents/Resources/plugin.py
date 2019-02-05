@@ -82,7 +82,7 @@ class ShowCrosshair(ReporterPlugin):
 			fontAttributes = { 
 				#NSFontAttributeName: NSFont.labelFontOfSize_(10.0),
 				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
-				NSForegroundColorAttributeName: NSColor.blackColor()
+				NSForegroundColorAttributeName: NSColor.textColor()
 			}
 			displayText = NSAttributedString.alloc().initWithString_attributes_(
 				unicode(coordinateText), 
