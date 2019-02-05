@@ -59,7 +59,7 @@ class ShowCrosshair(ReporterPlugin):
 			crosshairPath.lineToPoint_( NSPoint( crossHairCenter.x + xOffset - cursorOffset,  offset ) )
 			crosshairPath.moveToPoint_( NSPoint( -offset, crossHairCenter.y ) )
 			crosshairPath.lineToPoint_( NSPoint(  offset, crossHairCenter.y ) )
-			NSColor.textColor().set()
+			NSColor.disabledControlTextColor().set()
 			crosshairPath.stroke()
 	
 	def mousePosition(self):
