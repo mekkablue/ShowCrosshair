@@ -33,6 +33,56 @@ class ShowCrosshair(ReporterPlugin):
 			})
 		# self.universalCrosshair = bool( Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"] )
 		self.controller = None
+	
+	def foreground(self, layer):
+		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and not toolIsTextTool:
+			mousePosition = self.mousePosition()
+			# stem thickness x slice
+			f = Glyphs.font
+			m = f.selectedFontMaster
+			sliceX = mousePosition.x
+			miniY = m.descender - 1000*(f.upm/1000.0)
+			maxiY = m.ascender + 1000*(f.upm/1000.0)
+			prev = miniY
+			ys = {}
+			for inter in layer.calculateIntersectionsStartPoint_endPoint_decompose_((sliceX,miniY),(sliceX,maxiY),True):
+				if prev != miniY and inter.y != maxiY:
+					ys[(inter.y-prev)/2+prev] = inter.y-prev
+				prev = inter.y
+
+			scale = self.getScale()
+			# stem thickness y slice
+			sliceY = mousePosition.y
+			miniX = -1000*(f.upm/1000.0)
+			maxiX = layer.width + 1000*(f.upm/1000.0)
+			prev = miniX
+			xs = {}
+			for inter in layer.calculateIntersectionsStartPoint_endPoint_decompose_((miniX,sliceY),(maxiX,sliceY),True):
+				if prev != miniX and inter.x != maxiX:
+					xs[(inter.x-prev)/2+prev] = inter.x-prev
+				prev = inter.x
+
+			# set font attributes
+			fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
+			thicknessFontAttributes = { 
+				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
+				NSForegroundColorAttributeName: NSColor.textColor()
+			}
+
+			for key, item in ys.iteritems():
+				item = round(item, 1)
+				if item != 0:
+					x, y = sliceX*scale, (key-m.ascender)*scale
+					self.drawThicknessBadge(scale, fontSize, x, y, item)
+					self.drawThicknessText(thicknessFontAttributes, x, y, item)
+
+			for key, item in xs.iteritems():
+				item = round(item, 1)
+				if item != 0:
+					x, y = key*scale, (sliceY-m.ascender)*scale
+					self.drawThicknessBadge(scale, fontSize, x, y, item)
+					self.drawThicknessText(thicknessFontAttributes, x, y, item)
+		
 		
 	def background(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
@@ -93,54 +143,6 @@ class ShowCrosshair(ReporterPlugin):
 			#font = layer.parent.parent
 			lowerLeftCorner = self.controller.viewPort.origin
 			displayText.drawAtPoint_alignment_(lowerLeftCorner, textAlignment)
-
-		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and not toolIsTextTool:
-			mousePosition = self.mousePosition()
-			# stem thickness x slice
-			f = Glyphs.font
-			m = f.selectedFontMaster
-			sliceX = mousePosition.x
-			miniY = m.descender - 1000*(f.upm/1000.0)
-			maxiY = m.ascender + 1000*(f.upm/1000.0)
-			prev = miniY
-			ys = {}
-			for inter in layer.calculateIntersectionsStartPoint_endPoint_decompose_((sliceX,miniY),(sliceX,maxiY),True):
-				if prev != miniY and inter.y != maxiY:
-					ys[(inter.y-prev)/2+prev] = inter.y-prev
-				prev = inter.y
-
-			scale = self.getScale()
-			# stem thickness y slice
-			sliceY = mousePosition.y
-			miniX = -1000*(f.upm/1000.0)
-			maxiX = layer.width + 1000*(f.upm/1000.0)
-			prev = miniX
-			xs = {}
-			for inter in layer.calculateIntersectionsStartPoint_endPoint_decompose_((miniX,sliceY),(maxiX,sliceY),True):
-				if prev != miniX and inter.x != maxiX:
-					xs[(inter.x-prev)/2+prev] = inter.x-prev
-				prev = inter.x
-
-			# set font attributes
-			fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
-			thicknessFontAttributes = { 
-				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
-				NSForegroundColorAttributeName: NSColor.textColor()
-			}
-
-			for key, item in ys.iteritems():
-				item = round(item, 1)
-				if item != 0:
-					x, y = sliceX*scale, (key-m.ascender)*scale
-					self.drawThicknessBadge(scale, fontSize, x, y, item)
-					self.drawThicknessText(thicknessFontAttributes, x, y, item)
-
-			for key, item in xs.iteritems():
-				item = round(item, 1)
-				if item != 0:
-					x, y = key*scale, (sliceY-m.ascender)*scale
-					self.drawThicknessBadge(scale, fontSize, x, y, item)
-					self.drawThicknessText(thicknessFontAttributes, x, y, item)
 
 	def drawThicknessBadge(self, scale, fontSize, x, y, value):
 		width = len(str(value)) * fontSize * 0.7
