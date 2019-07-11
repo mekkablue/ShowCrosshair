@@ -36,9 +36,11 @@ class ShowCrosshair(ReporterPlugin):
 	
 	def foreground(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
+		toolIsDragging = toolEventHandler.dragging()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
+		shouldDisplay = (bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]) and not toolIsTextTool) or toolIsDragging
 		
-		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and not toolIsTextTool:
+		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and shouldDisplay:
 			mousePosition = self.mousePosition()
 			# stem thickness x slice
 			f = Glyphs.font
