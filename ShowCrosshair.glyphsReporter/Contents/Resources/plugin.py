@@ -41,31 +41,41 @@ class ShowCrosshair(ReporterPlugin):
 		shouldDisplay = (bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]) and not toolIsTextTool) or toolIsDragging
 		
 		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and shouldDisplay:
-			mousePosition = self.mousePosition()
-			# stem thickness x slice
-			f = Glyphs.font
-			m = f.selectedFontMaster
-			sliceX = mousePosition.x
-			miniY = m.descender - 1000*(f.upm/1000.0)
-			maxiY = m.ascender + 1000*(f.upm/1000.0)
-			prev = miniY
-			ys = {}
-			for inter in layer.calculateIntersectionsStartPoint_endPoint_decompose_((sliceX,miniY),(sliceX,maxiY),True):
-				if prev != miniY and inter.y != maxiY:
-					ys[(inter.y-prev)/2+prev] = inter.y-prev
-				prev = inter.y
-
+			font = Glyphs.font
+			master = layer.associatedFontMaster()
 			scale = self.getScale()
-			# stem thickness y slice
+			mousePosition = self.mousePosition()
+
+			# stem thickness horizontal slice
 			sliceY = mousePosition.y
-			miniX = -1000*(f.upm/1000.0)
-			maxiX = layer.width + 1000*(f.upm/1000.0)
-			prev = miniX
+			minX = -1000*(font.upm/1000.0)
+			maxX = layer.width + 1000*(font.upm/1000.0)
+			prev = minX
 			xs = {}
-			for inter in layer.calculateIntersectionsStartPoint_endPoint_decompose_((miniX,sliceY),(maxiX,sliceY),True):
-				if prev != miniX and inter.x != maxiX:
+			for inter in layer.calculateIntersectionsStartPoint_endPoint_decompose_(
+				(minX,sliceY),
+				(maxX,sliceY),
+				True,
+				):
+				if prev != minX and inter.x != maxX:
 					xs[(inter.x-prev)/2+prev] = inter.x-prev
 				prev = inter.x
+			
+			# stem thickness vertical slice
+			sliceX = mousePosition.x
+			minY = master.descender - 1000*(font.upm/1000.0)
+			maxY = master.ascender  + 1000*(font.upm/1000.0)
+			prev = minY
+			ys = {}
+			verticalIntersections = layer.calculateIntersectionsStartPoint_endPoint_decompose_(
+				self.italicize( NSPoint(sliceX,minY), italicAngle=master.italicAngle, pivotalY=sliceY ),
+				self.italicize( NSPoint(sliceX,maxY), italicAngle=master.italicAngle, pivotalY=sliceY ),
+				True,
+				)
+			for inter in verticalIntersections:
+				if prev != minY and inter.y != maxY:
+					ys[(inter.y-prev)/2+prev] = inter.y-prev
+				prev = inter.y
 
 			# set font attributes
 			fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
@@ -73,21 +83,41 @@ class ShowCrosshair(ReporterPlugin):
 				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize/scale,0.0),
 				NSForegroundColorAttributeName: NSColor.textColor()
 			}
-
+			
+			# number badges on vertical slice:
 			for key, item in ys.iteritems():
 				item = round(item, 1)
 				if item != 0:
-					x, y = sliceX, key #(key-m.ascender)
+					x, y = sliceX, key
+					# adjust x for italic angle if necessary:
+					if master.italicAngle:
+						x = self.italicize( NSPoint(x,y), italicAngle=master.italicAngle, pivotalY=sliceY ).x
 					self.drawThicknessBadge(scale, fontSize, x, y, item)
 					self.drawThicknessText(thicknessFontAttributes, x, y, item)
-
+					
+			# number badges on horizontal slice:
 			for key, item in xs.iteritems():
 				item = round(item, 1)
 				if item != 0:
-					x, y = key, sliceY #(sliceY-m.ascender)
+					x, y = key, sliceY
 					self.drawThicknessBadge(scale, fontSize, x, y, item)
 					self.drawThicknessText(thicknessFontAttributes, x, y, item)
-		
+	
+	def italicize( self, thisPoint, italicAngle=0.0, pivotalY=0.0 ):
+		"""
+		Returns the italicized position of an NSPoint 'thisPoint'
+		for a given angle 'italicAngle' and the pivotal height 'pivotalY',
+		around which the italic slanting is executed, usually half x-height.
+		Usage: myPoint = italicize(myPoint,10,xHeight*0.5)
+		"""
+		x = thisPoint.x
+		yOffset = thisPoint.y - pivotalY # calculate vertical offset
+		italicAngle = math.radians( italicAngle ) # convert to radians
+		tangens = math.tan( italicAngle ) # math.tan needs radians
+		horizontalDeviance = tangens * yOffset # vertical distance from pivotal point
+		x += horizontalDeviance # x of point that is yOffset from pivotal point
+		return NSPoint( x, thisPoint.y )
+	
 		
 	def background(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
@@ -95,27 +125,31 @@ class ShowCrosshair(ReporterPlugin):
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 		crossHairCenter = self.mousePosition()
 		shouldDisplay = (bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]) and not toolIsTextTool) or toolIsDragging
+		
 		if crossHairCenter.x < NSNotFound and shouldDisplay:
+			# determine italic angle:
 			italicAngle = 0.0
 			try:
 				thisMaster = layer.associatedFontMaster()
-				italicAngle = math.radians( thisMaster.italicAngle )
+				italicAngle = thisMaster.italicAngle
 			except:
 				pass
-		
-			# draw crosshair:
+			
+			# set up bezierpath:
 			offset = 1000000
-			tangens = math.tan( italicAngle )
-			xOffset = tangens * offset
-			cursorOffset = tangens * crossHairCenter.y
-			currentScale = self.getScale()
+			NSColor.disabledControlTextColor().set() # subtle grey
 			crosshairPath = NSBezierPath.bezierPath()
-			crosshairPath.setLineWidth_( 0.5 / currentScale )
-			crosshairPath.moveToPoint_( NSPoint( crossHairCenter.x - xOffset - cursorOffset, -offset ) )
-			crosshairPath.lineToPoint_( NSPoint( crossHairCenter.x + xOffset - cursorOffset,  offset ) )
-			crosshairPath.moveToPoint_( NSPoint( -offset, crossHairCenter.y ) )
-			crosshairPath.lineToPoint_( NSPoint(  offset, crossHairCenter.y ) )
-			NSColor.disabledControlTextColor().set()
+			crosshairPath.setLineWidth_( 0.75 / self.getScale() )
+
+			# vertical line:
+			crosshairPath.moveToPoint_( self.italicize( NSPoint(crossHairCenter.x,-offset), italicAngle=italicAngle, pivotalY=crossHairCenter.y) )
+			crosshairPath.lineToPoint_( self.italicize( NSPoint(crossHairCenter.x,+offset), italicAngle=italicAngle, pivotalY=crossHairCenter.y) )
+			
+			# horizontal line:
+			crosshairPath.moveToPoint_( NSPoint(-offset,crossHairCenter.y) )
+			crosshairPath.lineToPoint_( NSPoint(+offset,crossHairCenter.y) )
+
+			# execute stroke:
 			crosshairPath.stroke()
 	
 	def mousePosition(self):
