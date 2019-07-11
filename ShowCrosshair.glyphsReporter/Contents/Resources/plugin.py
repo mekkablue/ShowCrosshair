@@ -26,19 +26,18 @@ class ShowCrosshair(ReporterPlugin):
 			'fr': u'réticule',
 			'jp': u'カーソル照準',
 		})
-		NSUserDefaults.standardUserDefaults().registerDefaults_({
-				"com.mekkablue.ShowCrosshair.universalCrosshair": 1,
-				"com.mekkablue.ShowCrosshair.showCoordinates": 0,
-				"com.mekkablue.ShowCrosshair.fontSize": 10.0
-			})
-		# self.universalCrosshair = bool( Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"] )
+		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.universalCrosshair", 1)
+		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showCoordinates", 0)
+		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showThickness", 0)
+		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.fontSize", 10.0)
+		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.ignoreItalicAngle", 0)
 		self.controller = None
 	
 	def foreground(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsDragging = toolEventHandler.dragging()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
-		shouldDisplay = (bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]) and not toolIsTextTool) or toolIsDragging
+		shouldDisplay = (Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.universalCrosshair"] and not toolIsTextTool) or toolIsDragging
 		
 		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and shouldDisplay:
 			font = Glyphs.font
@@ -110,21 +109,23 @@ class ShowCrosshair(ReporterPlugin):
 		around which the italic slanting is executed, usually half x-height.
 		Usage: myPoint = italicize(myPoint,10,xHeight*0.5)
 		"""
-		x = thisPoint.x
-		yOffset = thisPoint.y - pivotalY # calculate vertical offset
-		italicAngle = math.radians( italicAngle ) # convert to radians
-		tangens = math.tan( italicAngle ) # math.tan needs radians
-		horizontalDeviance = tangens * yOffset # vertical distance from pivotal point
-		x += horizontalDeviance # x of point that is yOffset from pivotal point
-		return NSPoint( x, thisPoint.y )
-	
+		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.ignoreItalicAngle"]:
+			return thisPoint
+		else:
+			x = thisPoint.x
+			yOffset = thisPoint.y - pivotalY # calculate vertical offset
+			italicAngle = math.radians( italicAngle ) # convert to radians
+			tangens = math.tan( italicAngle ) # math.tan needs radians
+			horizontalDeviance = tangens * yOffset # vertical distance from pivotal point
+			x += horizontalDeviance # x of point that is yOffset from pivotal point
+			return NSPoint( x, thisPoint.y )
 		
 	def background(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsDragging = toolEventHandler.dragging()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 		crossHairCenter = self.mousePosition()
-		shouldDisplay = (bool(Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]) and not toolIsTextTool) or toolIsDragging
+		shouldDisplay = (Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.universalCrosshair"] and not toolIsTextTool) or toolIsDragging
 		
 		if crossHairCenter.x < NSNotFound and shouldDisplay:
 			# determine italic angle:
@@ -274,7 +275,7 @@ class ShowCrosshair(ReporterPlugin):
 	
 	def toggleSetting(self, prefName):
 		pref = "com.mekkablue.ShowCrosshair.%s" % prefName
-		oldSetting = bool(Glyphs.defaults[pref])
+		oldSetting = Glyphs.boolDefaults[pref]
 		Glyphs.defaults[pref] = int(not oldSetting)
 	
 	def addMenuItemsForEvent_toMenu_(self, event, contextMenu):
