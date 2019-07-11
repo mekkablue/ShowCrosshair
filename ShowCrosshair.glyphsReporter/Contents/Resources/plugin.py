@@ -24,6 +24,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u'Fadenkreuz',
 			'es': u'cruz',
 			'fr': u'réticule',
+			'jp': u'カーソル照準',
 		})
 		NSUserDefaults.standardUserDefaults().registerDefaults_({
 				"com.mekkablue.ShowCrosshair.universalCrosshair": 1,
@@ -70,7 +71,7 @@ class ShowCrosshair(ReporterPlugin):
 	def foregroundInViewCoords(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
-		
+
 		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showCoordinates"] and not toolIsTextTool:
 			mousePosition = self.mousePosition()
 			coordinateText = "%4d, %4d" % (
@@ -93,12 +94,77 @@ class ShowCrosshair(ReporterPlugin):
 			lowerLeftCorner = self.controller.viewPort.origin
 			displayText.drawAtPoint_alignment_(lowerLeftCorner, textAlignment)
 
+		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and not toolIsTextTool:
+			mousePosition = self.mousePosition()
+			# stem thickness x slice
+			f = Glyphs.font
+			m = f.selectedFontMaster
+			sliceX = mousePosition.x
+			miniY = m.descender - 1000*(f.upm/1000.0)
+			maxiY = m.ascender + 1000*(f.upm/1000.0)
+			prev = miniY
+			ys = {}
+			for inter in layer.calculateIntersectionsStartPoint_endPoint_decompose_((sliceX,miniY),(sliceX,maxiY),True):
+				if prev != miniY and inter.y != maxiY:
+					ys[(inter.y-prev)/2+prev] = inter.y-prev
+				prev = inter.y
+
+			scale = self.getScale()
+			# stem thickness y slice
+			sliceY = mousePosition.y
+			miniX = -1000*(f.upm/1000.0)
+			maxiX = layer.width + 1000*(f.upm/1000.0)
+			prev = miniX
+			xs = {}
+			for inter in layer.calculateIntersectionsStartPoint_endPoint_decompose_((miniX,sliceY),(maxiX,sliceY),True):
+				if prev != miniX and inter.x != maxiX:
+					xs[(inter.x-prev)/2+prev] = inter.x-prev
+				prev = inter.x
+
+			# set font attributes
+			fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
+			thicknessFontAttributes = { 
+				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
+				NSForegroundColorAttributeName: NSColor.textColor()
+			}
+
+			for key, item in ys.iteritems():
+				item = round(item, 1)
+				if item != 0:
+					x, y = sliceX*scale, (key-m.ascender)*scale
+					self.drawThicknessBadge(scale, fontSize, x, y, item)
+					self.drawThicknessText(thicknessFontAttributes, x, y, item)
+
+			for key, item in xs.iteritems():
+				item = round(item, 1)
+				if item != 0:
+					x, y = key*scale, (sliceY-m.ascender)*scale
+					self.drawThicknessBadge(scale, fontSize, x, y, item)
+					self.drawThicknessText(thicknessFontAttributes, x, y, item)
+
+	def drawThicknessBadge(self, scale, fontSize, x, y, value):
+		width = len(str(value)) * fontSize * 0.7
+		rim = fontSize * 0.3
+		badge = NSRect()
+		badge.origin = NSPoint( x-width/2, y-fontSize/2-rim )
+		badge.size = NSSize( width, fontSize + rim*2 )
+		NSColor.colorWithCalibratedRed_green_blue_alpha_( 1,1,1,1 ).set()
+		NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( badge, fontSize*0.5, fontSize*0.5 ).fill()
+
+	def drawThicknessText(self, thicknessFontAttributes, x, y, item):
+		displayText = NSAttributedString.alloc().initWithString_attributes_(
+			unicode(item), 
+			thicknessFontAttributes
+		)
+		displayText.drawAtPoint_alignment_((x, y), 4)
+
+
 	def mouseDidMove(self, notification):
 		if self.controller:
 			self.controller.redraw()
 		else:
 			Glyphs.redraw()
-	
+
 	def willActivate(self):
 		Glyphs.addCallback(self.mouseDidMove, MOUSEMOVED)
 		
@@ -114,6 +180,9 @@ class ShowCrosshair(ReporterPlugin):
 		
 	def toggleShowCoordinates(self):
 		self.toggleSetting("showCoordinates")
+
+	def toggleShowThickness(self):
+		self.toggleSetting("showThickness")
 	
 	def conditionalContextMenus(self):
 		return [
@@ -123,6 +192,7 @@ class ShowCrosshair(ReporterPlugin):
 				'de': u"Fadenkreuz-Einstellungen:", 
 				'es': u"Opciones de la cruz:", 
 				'fr': u"Options pour le réticule:",
+				'jp': u"照準プラグインオプション",
 				}), 
 			'action': None,
 		},
@@ -131,7 +201,8 @@ class ShowCrosshair(ReporterPlugin):
 				'en': u"Always Show Crosshair", 
 				'de': u"Fadenkreuz immer anzeigen", 
 				'es': u"Siempre mostrar la cruz", 
-				'fr': u"Toujours montrer le réticule",
+				'fr': u"Toujours afficher le réticule",
+				'jp': u"照準を常に表示",
 				}), 
 			'action': self.toggleUniversalCrosshair,
 			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.universalCrosshair" ],
@@ -141,13 +212,24 @@ class ShowCrosshair(ReporterPlugin):
 				'en': u"Show Coordinates", 
 				'de': u"Koordinaten anzeigen", 
 				'es': u"Mostrar coordinados", 
-				'fr': u"Montrer coordonnées",
+				'fr': u"Afficher les coordonnées",
+				'jp': u"マウスの座標を左下に表示",
 				}), 
 			'action': self.toggleShowCoordinates,
 			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.showCoordinates" ],
 		},
+		{
+			'name': Glyphs.localize({
+				'en': u"Show Thickness", 
+				'de': u"Dicke anzeigen", 
+				'es': u"Espesor coordinados", 
+				'fr': u"Afficher l'épaisseur",
+				'jp': u"縦横の太さを表示",
+				}), 
+			'action': self.toggleShowThickness,
+			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.showThickness" ],
+		},
 		]
-		
 	
 	def toggleSetting(self, prefName):
 		pref = "com.mekkablue.ShowCrosshair.%s" % prefName
