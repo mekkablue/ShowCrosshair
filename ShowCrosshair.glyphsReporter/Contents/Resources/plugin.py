@@ -227,10 +227,10 @@ class ShowCrosshair(ReporterPlugin):
 		},
 		{
 			'name': Glyphs.localize({
-				'en': u"Show Thickness", 
-				'de': u"Dicke anzeigen", 
-				'es': u"Espesor coordinados", 
-				'fr': u"Afficher l'épaisseur",
+				'en': u"Show Thicknesses", 
+				'de': u"Dicken anzeigen", 
+				'es': u"Mostrar grosores", 
+				'fr': u"Afficher les épaisseurs",
 				'jp': u"縦横の太さを表示",
 				}), 
 			'action': self.toggleShowThickness,
