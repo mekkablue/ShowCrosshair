@@ -153,7 +153,7 @@ class ShowCrosshair(ReporterPlugin):
 		badge = NSRect()
 		badge.origin = NSPoint( x-width/2, y-fontSize/2-rim )
 		badge.size = NSSize( width, fontSize + rim*2 )
-		NSColor.colorWithCalibratedRed_green_blue_alpha_( 1,1,1,1 ).set()
+		NSColor.textBackgroundColor().set()
 		NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( badge, fontSize*0.5, fontSize*0.5 ).fill()
 
 	def drawThicknessText(self, thicknessFontAttributes, x, y, item):
