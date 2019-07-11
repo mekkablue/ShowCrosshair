@@ -35,6 +35,9 @@ class ShowCrosshair(ReporterPlugin):
 		self.controller = None
 	
 	def foreground(self, layer):
+		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
+		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
+		
 		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and not toolIsTextTool:
 			mousePosition = self.mousePosition()
 			# stem thickness x slice
@@ -65,21 +68,21 @@ class ShowCrosshair(ReporterPlugin):
 			# set font attributes
 			fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
 			thicknessFontAttributes = { 
-				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
+				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize/scale,0.0),
 				NSForegroundColorAttributeName: NSColor.textColor()
 			}
 
 			for key, item in ys.iteritems():
 				item = round(item, 1)
 				if item != 0:
-					x, y = sliceX*scale, (key-m.ascender)*scale
+					x, y = sliceX, key #(key-m.ascender)
 					self.drawThicknessBadge(scale, fontSize, x, y, item)
 					self.drawThicknessText(thicknessFontAttributes, x, y, item)
 
 			for key, item in xs.iteritems():
 				item = round(item, 1)
 				if item != 0:
-					x, y = key*scale, (sliceY-m.ascender)*scale
+					x, y = key, sliceY #(sliceY-m.ascender)
 					self.drawThicknessBadge(scale, fontSize, x, y, item)
 					self.drawThicknessText(thicknessFontAttributes, x, y, item)
 		
@@ -145,8 +148,8 @@ class ShowCrosshair(ReporterPlugin):
 			displayText.drawAtPoint_alignment_(lowerLeftCorner, textAlignment)
 
 	def drawThicknessBadge(self, scale, fontSize, x, y, value):
-		width = len(str(value)) * fontSize * 0.7
-		rim = fontSize * 0.3
+		width = len(str(value)) * fontSize * 0.7 / scale
+		rim = fontSize * 0.3 / scale
 		badge = NSRect()
 		badge.origin = NSPoint( x-width/2, y-fontSize/2-rim )
 		badge.size = NSSize( width, fontSize + rim*2 )
