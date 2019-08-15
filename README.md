@@ -6,11 +6,11 @@ This is a plugin for the [Glyphs font editor](http://glyphsapp.com/) by Georg Se
 
 Depending on your crosshair setting, it shows a crosshair either always, or only while you drag your mouse pointer with the mouse button held down. Switch between states via the context menu: right click and select or deselect *Always Show Crosshair* (de: *Fadenkreuz immer anzeigen*, es: *Siempre mostrar la cruz*, fr: *Toujours afficher le réticule*, jp: *照準を常に表示*).
 
-You can toggle the display of measurements between intersections with the context menu option *Show Thicknesses* (de: *Dicken anzeigen*, es: *Mostrar grosores*, fr: *Afficher les épaisseurs*, jp: *縦横の太さを表示*).
+Toggle the display of measurements between intersections with the context menu option *Show Thicknesses* (de: *Dicken anzeigen*, es: *Mostrar grosores*, fr: *Afficher les épaisseurs*, jp: *縦横の太さを表示*).
 
 ![Crosshair options](ToggleCrosshairOptions.png "Toggling Crosshair options in the context menu")
 
-You can also display the crosshair coordinates in the lower left corner of the active tab by choosing *Show Coordinates* (de: *Koordinaten anzeigen*, es: *Mostrar coordinados*, fr: *Afficher les coordonnées*, jp: *マウスの座標を左下に表示*):
+Display the crosshair coordinates in the lower left corner of the active tab by choosing *Show Coordinates* (de: *Koordinaten anzeigen*, es: *Mostrar coordinados*, fr: *Afficher les coordonnées*, jp: *マウスの座標を左下に表示*):
 
 ![Coordinates in lower left corner](ToggleCoordinates.png "Coordinates are displayed in the lower left corner of the Edit view")
 
