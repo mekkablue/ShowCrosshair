@@ -25,6 +25,7 @@ class ShowCrosshair(ReporterPlugin):
 			'es': u'cruz',
 			'fr': u'réticule',
 			'jp': u'カーソル照準',
+			'zh': u'✨显示准星线',
 		})
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.universalCrosshair", 1)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showCoordinates", 0)
@@ -235,6 +236,7 @@ class ShowCrosshair(ReporterPlugin):
 				'es': u"Opciones de la cruz:", 
 				'fr': u"Options pour le réticule:",
 				'jp': u"照準プラグインオプション",
+				'zh': u"准星线选项",
 				}), 
 			'action': None,
 		},
@@ -245,6 +247,7 @@ class ShowCrosshair(ReporterPlugin):
 				'es': u"Siempre mostrar la cruz", 
 				'fr': u"Toujours afficher le réticule",
 				'jp': u"照準を常に表示",
+				'zh': u"始终显示准星线",
 				}), 
 			'action': self.toggleUniversalCrosshair,
 			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.universalCrosshair" ],
@@ -256,6 +259,7 @@ class ShowCrosshair(ReporterPlugin):
 				'es': u"Mostrar coordinados", 
 				'fr': u"Afficher les coordonnées",
 				'jp': u"マウスの座標を左下に表示",
+				'zh': u"在左下角显示坐标值",
 				}), 
 			'action': self.toggleShowCoordinates,
 			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.showCoordinates" ],
@@ -267,6 +271,7 @@ class ShowCrosshair(ReporterPlugin):
 				'es': u"Mostrar grosores", 
 				'fr': u"Afficher les épaisseurs",
 				'jp': u"縦横の太さを表示",
+				'zh': u"显示纵横坐标差",
 				}), 
 			'action': self.toggleShowThickness,
 			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.showThickness" ],
