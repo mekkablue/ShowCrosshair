@@ -25,7 +25,7 @@ class ShowCrosshair(ReporterPlugin):
 			'es': u'cruz',
 			'fr': u'réticule',
 			'jp': u'カーソル照準',
-			'zh': u'✨显示准星线',
+			'zh': u'✨准星线',
 		})
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.universalCrosshair", 1)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showCoordinates", 0)
