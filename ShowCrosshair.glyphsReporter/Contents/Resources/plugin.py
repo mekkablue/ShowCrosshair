@@ -1,23 +1,23 @@
 # encoding: utf-8
+from __future__ import division, print_function, unicode_literals
 
-###########################################################################################################
+#######################################################################################
 #
+# Reporter Plugin
 #
-#	Reporter Plugin
+# Read the docs:
+# https://github.com/schriftgestalt/GlyphsSDK/tree/master/Python%20Templates/Reporter
 #
-#	Read the docs:
-#	https://github.com/schriftgestalt/GlyphsSDK/tree/master/Python%20Templates/Reporter
-#
-#
-###########################################################################################################
+#######################################################################################
 
+import objc
 from GlyphsApp import *
 from GlyphsApp.plugins import *
-from GlyphsApp.plugins import setUpMenuHelper
-import math
+from math import radians, tan
 
 class ShowCrosshair(ReporterPlugin):
 
+	@objc.python_method
 	def settings(self):
 		self.menuName = Glyphs.localize({
 			'en': u'Crosshair', 
@@ -27,13 +27,64 @@ class ShowCrosshair(ReporterPlugin):
 			'jp': u'カーソル照準',
 			'zh': u'✨准星线',
 		})
+		
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.universalCrosshair", 1)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showCoordinates", 0)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showThickness", 0)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.fontSize", 10.0)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.ignoreItalicAngle", 0)
-		self.controller = None
+		
+		self.generalContextMenus = [
+		{
+			'name': Glyphs.localize({
+				'en': u"Crosshair Options:", 
+				'de': u"Fadenkreuz-Einstellungen:", 
+				'es': u"Opciones de la cruz:", 
+				'fr': u"Options pour le réticule:",
+				'jp': u"照準プラグインオプション",
+				'zh': u"准星线选项",
+				}), 
+			'action': None,
+		},
+		{
+			'name': Glyphs.localize({
+				'en': u"Always Show Crosshair", 
+				'de': u"Fadenkreuz immer anzeigen", 
+				'es': u"Siempre mostrar la cruz", 
+				'fr': u"Toujours afficher le réticule",
+				'jp': u"照準を常に表示",
+				'zh': u"始终显示准星线",
+				}), 
+			'action': self.toggleUniversalCrosshair,
+			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.universalCrosshair" ],
+		},
+		{
+			'name': Glyphs.localize({
+				'en': u"Show Coordinates", 
+				'de': u"Koordinaten anzeigen", 
+				'es': u"Mostrar coordinados", 
+				'fr': u"Afficher les coordonnées",
+				'jp': u"マウスの座標を左下に表示",
+				'zh': u"在左下角显示坐标值",
+				}), 
+			'action': self.toggleShowCoordinates,
+			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.showCoordinates" ],
+		},
+		{
+			'name': Glyphs.localize({
+				'en': u"Show Thicknesses", 
+				'de': u"Dicken anzeigen", 
+				'es': u"Mostrar grosores", 
+				'fr': u"Afficher les épaisseurs",
+				'jp': u"縦横の太さを表示",
+				'zh': u"显示纵横坐标差",
+				}), 
+			'action': self.toggleShowThickness,
+			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.showThickness" ],
+		},
+		]
 	
+	@objc.python_method
 	def foreground(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsDragging = toolEventHandler.dragging()
@@ -85,7 +136,8 @@ class ShowCrosshair(ReporterPlugin):
 			}
 			
 			# number badges on vertical slice:
-			for key, item in ys.iteritems():
+			for key in ys:
+				item = ys[key]
 				item = round(item, 1)
 				if item != 0:
 					x, y = sliceX, key
@@ -96,13 +148,15 @@ class ShowCrosshair(ReporterPlugin):
 					self.drawThicknessText(thicknessFontAttributes, x, y, item)
 					
 			# number badges on horizontal slice:
-			for key, item in xs.iteritems():
+			for key in xs:
+				item = xs[key]
 				item = round(item, 1)
 				if item != 0:
 					x, y = key, sliceY
 					self.drawThicknessBadge(scale, fontSize, x, y, item)
 					self.drawThicknessText(thicknessFontAttributes, x, y, item)
 	
+	@objc.python_method
 	def italicize( self, thisPoint, italicAngle=0.0, pivotalY=0.0 ):
 		"""
 		Returns the italicized position of an NSPoint 'thisPoint'
@@ -115,12 +169,13 @@ class ShowCrosshair(ReporterPlugin):
 		else:
 			x = thisPoint.x
 			yOffset = thisPoint.y - pivotalY # calculate vertical offset
-			italicAngle = math.radians( italicAngle ) # convert to radians
-			tangens = math.tan( italicAngle ) # math.tan needs radians
+			italicAngle = radians( italicAngle ) # convert to radians
+			tangens = tan( italicAngle ) # math.tan needs radians
 			horizontalDeviance = tangens * yOffset # vertical distance from pivotal point
 			x += horizontalDeviance # x of point that is yOffset from pivotal point
 			return NSPoint( x, thisPoint.y )
-		
+	
+	@objc.python_method
 	def background(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsDragging = toolEventHandler.dragging()
@@ -159,7 +214,8 @@ class ShowCrosshair(ReporterPlugin):
 		mousePosition = view.getActiveLocation_(Glyphs.currentEvent())
 		return mousePosition
 	
-	def foregroundInViewCoords(self, layer):
+	@objc.python_method
+	def foregroundInViewCoords(self):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 
@@ -177,7 +233,7 @@ class ShowCrosshair(ReporterPlugin):
 				NSForegroundColorAttributeName: NSColor.textColor()
 			}
 			displayText = NSAttributedString.alloc().initWithString_attributes_(
-				unicode(coordinateText), 
+				coordinateText, 
 				fontAttributes
 			)
 			textAlignment = 0 # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
@@ -185,6 +241,7 @@ class ShowCrosshair(ReporterPlugin):
 			lowerLeftCorner = self.controller.viewPort.origin
 			displayText.drawAtPoint_alignment_(lowerLeftCorner, textAlignment)
 
+	@objc.python_method
 	def drawThicknessBadge(self, scale, fontSize, x, y, value):
 		width = len(str(value)) * fontSize * 0.7 / scale
 		rim = fontSize * 0.3 / scale
@@ -194,112 +251,66 @@ class ShowCrosshair(ReporterPlugin):
 		NSColor.textBackgroundColor().set()
 		NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( badge, fontSize*0.5, fontSize*0.5 ).fill()
 
+	@objc.python_method
 	def drawThicknessText(self, thicknessFontAttributes, x, y, item):
 		displayText = NSAttributedString.alloc().initWithString_attributes_(
-			unicode(item), 
+			str(item), 
 			thicknessFontAttributes
 		)
 		displayText.drawAtPoint_alignment_((x, y), 4)
 
-
-	def mouseDidMove(self, notification):
+	def mouseDidMove_(self, notification):
 		if self.controller:
 			self.controller.redraw()
 		else:
 			Glyphs.redraw()
 
 	def willActivate(self):
-		Glyphs.addCallback(self.mouseDidMove, MOUSEMOVED)
-		
+		Glyphs.addCallback(self.mouseDidMove_, MOUSEMOVED)
+	
 	def willDeactivate(self):
 		try:
-			Glyphs.removeCallback(self.mouseDidMove, MOUSEMOVED)
+			Glyphs.removeCallback(self.mouseDidMove_, MOUSEMOVED)
 		except:
 			import traceback
 			NSLog(traceback.format_exc())
 	
 	def toggleUniversalCrosshair(self):
 		self.toggleSetting("universalCrosshair")
-		
+	
 	def toggleShowCoordinates(self):
 		self.toggleSetting("showCoordinates")
 
 	def toggleShowThickness(self):
 		self.toggleSetting("showThickness")
 	
-	def conditionalContextMenus(self):
-		return [
-		{
-			'name': Glyphs.localize({
-				'en': u"Crosshair Options:", 
-				'de': u"Fadenkreuz-Einstellungen:", 
-				'es': u"Opciones de la cruz:", 
-				'fr': u"Options pour le réticule:",
-				'jp': u"照準プラグインオプション",
-				'zh': u"准星线选项",
-				}), 
-			'action': None,
-		},
-		{
-			'name': Glyphs.localize({
-				'en': u"Always Show Crosshair", 
-				'de': u"Fadenkreuz immer anzeigen", 
-				'es': u"Siempre mostrar la cruz", 
-				'fr': u"Toujours afficher le réticule",
-				'jp': u"照準を常に表示",
-				'zh': u"始终显示准星线",
-				}), 
-			'action': self.toggleUniversalCrosshair,
-			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.universalCrosshair" ],
-		},
-		{
-			'name': Glyphs.localize({
-				'en': u"Show Coordinates", 
-				'de': u"Koordinaten anzeigen", 
-				'es': u"Mostrar coordinados", 
-				'fr': u"Afficher les coordonnées",
-				'jp': u"マウスの座標を左下に表示",
-				'zh': u"在左下角显示坐标值",
-				}), 
-			'action': self.toggleShowCoordinates,
-			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.showCoordinates" ],
-		},
-		{
-			'name': Glyphs.localize({
-				'en': u"Show Thicknesses", 
-				'de': u"Dicken anzeigen", 
-				'es': u"Mostrar grosores", 
-				'fr': u"Afficher les épaisseurs",
-				'jp': u"縦横の太さを表示",
-				'zh': u"显示纵横坐标差",
-				}), 
-			'action': self.toggleShowThickness,
-			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.showThickness" ],
-		},
-		]
-	
+	@objc.python_method
 	def toggleSetting(self, prefName):
 		pref = "com.mekkablue.ShowCrosshair.%s" % prefName
 		oldSetting = Glyphs.boolDefaults[pref]
 		Glyphs.defaults[pref] = int(not oldSetting)
 	
-	def addMenuItemsForEvent_toMenu_(self, event, contextMenu):
-		'''
-		The event can tell you where the user had clicked.
-		'''
-		try:
-			
-			if self.generalContextMenus:
-				setUpMenuHelper(contextMenu, self.generalContextMenus, self)
-			
-			newSeparator = NSMenuItem.separatorItem()
-			contextMenu.addItem_(newSeparator)
-			
-			contextMenus = self.conditionalContextMenus()
-			if contextMenus:
-				setUpMenuHelper(contextMenu, contextMenus, self)
-		
-		except:
-			import traceback
-			NSLog(traceback.format_exc())
-	
+	# def addMenuItemsForEvent_toMenu_(self, event, contextMenu):
+	# 	'''
+	# 	The event can tell you where the user had clicked.
+	# 	'''
+	# 	try:
+	#
+	# 		if self.generalContextMenus:
+	# 			setUpMenuHelper(contextMenu, self.generalContextMenus, self)
+	#
+	# 		newSeparator = NSMenuItem.separatorItem()
+	# 		contextMenu.addItem_(newSeparator)
+	#
+	# 		contextMenus = self.conditionalContextMenus()
+	# 		if contextMenus:
+	# 			setUpMenuHelper(contextMenu, contextMenus, self)
+	#
+	# 	except:
+	# 		import traceback
+	# 		NSLog(traceback.format_exc())
+
+	@objc.python_method
+	def __file__(self):
+		"""Please leave this method unchanged"""
+		return __file__
