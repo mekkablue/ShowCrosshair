@@ -122,11 +122,10 @@ class ShowCrosshair(ReporterPlugin):
 				(maxX,sliceY),
 				True,
 			)
-			for inter in intersections:
-				if inter.x != maxX:
-					self.drawCircle(inter, handleSize)
-					if prev != minX:
-						xs[(inter.x-prev)/2+prev] = inter.x-prev
+			for inter in intersections[1:-1]:
+				self.drawCircle(inter, handleSize)
+				if prev != minX:
+					xs[(inter.x-prev)/2+prev] = inter.x-prev
 				prev = inter.x
 			
 			# stem thickness vertical slice
@@ -140,11 +139,10 @@ class ShowCrosshair(ReporterPlugin):
 				self.italicize( NSPoint(sliceX,maxY), italicAngle=master.italicAngle, pivotalY=sliceY ),
 				True,
 				)
-			for inter in verticalIntersections:
-				if inter.y != maxY:
-					self.drawCircle(inter, handleSize)
-					if prev != minY:
-						ys[(inter.y-prev)/2+prev] = inter.y-prev
+			for inter in verticalIntersections[1:-1]:
+				self.drawCircle(inter, handleSize)
+				if prev != minY:
+					ys[(inter.y-prev)/2+prev] = inter.y-prev
 				prev = inter.y
 
 			# set font attributes
