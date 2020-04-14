@@ -85,6 +85,16 @@ class ShowCrosshair(ReporterPlugin):
 		]
 	
 	@objc.python_method
+	def drawCircle(self, center, size):
+		radius = size*0.5
+		circle = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
+			NSMakeRect(center.x-radius, center.y-radius, size, size),
+			radius,
+			radius,
+			)
+		circle.fill()
+	
+	@objc.python_method
 	def foreground(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsDragging = toolEventHandler.dragging()
@@ -96,6 +106,10 @@ class ShowCrosshair(ReporterPlugin):
 			master = layer.associatedFontMaster()
 			scale = self.getScale()
 			mousePosition = self.mousePosition()
+			
+			# intersection markers:
+			handleSize = self.getHandleSize() * scale**-0.7
+			NSColor.separatorColor().set()
 
 			# stem thickness horizontal slice
 			sliceY = mousePosition.y
@@ -103,13 +117,16 @@ class ShowCrosshair(ReporterPlugin):
 			maxX = layer.width + 1000*(font.upm/1000.0)
 			prev = minX
 			xs = {}
-			for inter in layer.calculateIntersectionsStartPoint_endPoint_decompose_(
+			intersections = layer.calculateIntersectionsStartPoint_endPoint_decompose_(
 				(minX,sliceY),
 				(maxX,sliceY),
 				True,
-				):
-				if prev != minX and inter.x != maxX:
-					xs[(inter.x-prev)/2+prev] = inter.x-prev
+			)
+			for inter in intersections:
+				if inter.x != maxX:
+					self.drawCircle(inter, handleSize)
+					if prev != minX:
+						xs[(inter.x-prev)/2+prev] = inter.x-prev
 				prev = inter.x
 			
 			# stem thickness vertical slice
@@ -124,8 +141,10 @@ class ShowCrosshair(ReporterPlugin):
 				True,
 				)
 			for inter in verticalIntersections:
-				if prev != minY and inter.y != maxY:
-					ys[(inter.y-prev)/2+prev] = inter.y-prev
+				if inter.y != maxY:
+					self.drawCircle(inter, handleSize)
+					if prev != minY:
+						ys[(inter.y-prev)/2+prev] = inter.y-prev
 				prev = inter.y
 
 			# set font attributes
