@@ -34,7 +34,11 @@ class ShowCrosshair(ReporterPlugin):
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.fontSize", 10.0)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.ignoreItalicAngle", 0)
 		
-		self.generalContextMenus = [
+		self.generalContextMenus = self.buildContextMenus()
+	
+	@objc.python_method
+	def buildContextMenus(self, sender=None):
+		return [
 		{
 			'name': Glyphs.localize({
 				'en': u"Crosshair Options:", 
@@ -56,7 +60,7 @@ class ShowCrosshair(ReporterPlugin):
 				'zh': u"始终显示准星线",
 				}), 
 			'action': self.toggleUniversalCrosshair,
-			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.universalCrosshair" ],
+			'state': Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"],
 		},
 		{
 			'name': Glyphs.localize({
@@ -68,7 +72,7 @@ class ShowCrosshair(ReporterPlugin):
 				'zh': u"在左下角显示坐标值",
 				}), 
 			'action': self.toggleShowCoordinates,
-			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.showCoordinates" ],
+			'state': Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"],
 		},
 		{
 			'name': Glyphs.localize({
@@ -80,7 +84,7 @@ class ShowCrosshair(ReporterPlugin):
 				'zh': u"显示纵横坐标差",
 				}), 
 			'action': self.toggleShowThickness,
-			'state': Glyphs.defaults[ "com.mekkablue.ShowCrosshair.showThickness" ],
+			'state': Glyphs.defaults["com.mekkablue.ShowCrosshair.showThickness"],
 		},
 		]
 	
@@ -134,9 +138,20 @@ class ShowCrosshair(ReporterPlugin):
 			maxY = master.ascender  + 1000*(font.upm/1000.0)
 			prev = minY
 			ys = {}
+			
+			italicAngle=0
+			try:
+				# GLYPHS 3
+				storedAngle = master.defaultMetricForKey_("italic angle")
+				if storedAngle < 1000000: # not-found constant
+					italicAngle = storedAngle
+			except:
+				# GLYPHS 2
+				italicAngle = master.italicAngle
+			
 			verticalIntersections = layer.calculateIntersectionsStartPoint_endPoint_decompose_(
-				self.italicize( NSPoint(sliceX,minY), italicAngle=master.italicAngle, pivotalY=sliceY ),
-				self.italicize( NSPoint(sliceX,maxY), italicAngle=master.italicAngle, pivotalY=sliceY ),
+				self.italicize( NSPoint(sliceX,minY), italicAngle=italicAngle, pivotalY=sliceY ),
+				self.italicize( NSPoint(sliceX,maxY), italicAngle=italicAngle, pivotalY=sliceY ),
 				True,
 				)
 			for inter in verticalIntersections[1:-1]:
@@ -159,8 +174,8 @@ class ShowCrosshair(ReporterPlugin):
 				if item != 0:
 					x, y = sliceX, key
 					# adjust x for italic angle if necessary:
-					if master.italicAngle:
-						x = self.italicize( NSPoint(x,y), italicAngle=master.italicAngle, pivotalY=sliceY ).x
+					if italicAngle:
+						x = self.italicize( NSPoint(x,y), italicAngle=italicAngle, pivotalY=sliceY ).x
 					self.drawThicknessBadge(scale, fontSize, x, y, item)
 					self.drawThicknessText(thicknessFontAttributes, x, y, item)
 					
@@ -232,7 +247,7 @@ class ShowCrosshair(ReporterPlugin):
 		return mousePosition
 	
 	@objc.python_method
-	def foregroundInViewCoords(self):
+	def foregroundInViewCoords(self, layer=None):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 
@@ -277,7 +292,7 @@ class ShowCrosshair(ReporterPlugin):
 		displayText.drawAtPoint_alignment_((x, y), 4)
 
 	def mouseDidMove_(self, notification):
-		if self.controller:
+		if hasattr(self, 'controller') and self.controller:
 			self.controller.redraw()
 		else:
 			Glyphs.redraw()
@@ -306,6 +321,7 @@ class ShowCrosshair(ReporterPlugin):
 		pref = "com.mekkablue.ShowCrosshair.%s" % prefName
 		oldSetting = Glyphs.boolDefaults[pref]
 		Glyphs.defaults[pref] = int(not oldSetting)
+		self.generalContextMenus = self.buildContextMenus()
 	
 	# def addMenuItemsForEvent_toMenu_(self, event, contextMenu):
 	# 	'''
