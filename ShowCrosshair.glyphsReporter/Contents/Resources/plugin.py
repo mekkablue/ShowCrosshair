@@ -113,7 +113,10 @@ class ShowCrosshair(ReporterPlugin):
 			
 			# intersection markers:
 			handleSize = self.getHandleSize() * scale**-0.7
-			NSColor.separatorColor().set()
+			try:
+				NSColor.separatorColor().set()
+			except:
+				NSColor.systemGrayColor().set() # pre 10.14
 
 			# stem thickness horizontal slice
 			sliceY = mousePosition.y
