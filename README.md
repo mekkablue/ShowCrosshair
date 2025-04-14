@@ -4,21 +4,17 @@ This is a plugin for the [Glyphs font editor](http://glyphsapp.com/) by Georg Se
 
 ![Crosshair](ShowCrosshair.png "Show Crosshair Screenshot")
 
-Depending on your crosshair setting, it shows a crosshair either always, or only while you drag your mouse pointer with the mouse button held down. Switch between states via the context menu: right click and select or deselect *Always Show Crosshair* (de: *Fadenkreuz immer anzeigen*, es: *Siempre mostrar la cruz*, fr: *Toujours afficher le réticule*, jp: *照準を常に表示*, zh: *始终显示准星线*).
+Depending on your crosshair setting, it shows a crosshair either always, or only while you drag your mouse pointer with the mouse button held down. Switch between states via the context menu: right click and select or deselect *Only While Dragging* (de: *Nur beim Ziehen*, es: *Solo al arrastrar*, fr: *Uniquement pendant le glissement*, jp: *ドラッグ中のみ表示*, zh: *仅在拖动时显示*).
 
 Toggle the display of measurements between intersections with the context menu option *Show Thicknesses* (de: *Dicken anzeigen*, es: *Mostrar grosores*, fr: *Afficher les épaisseurs*, jp: *縦横の太さを表示*, zh: *显示纵横坐标差*).
 
 ![Crosshair options](ToggleCrosshairOptions.png "Toggling Crosshair options in the context menu")
 
-Display the crosshair coordinates in the lower left corner of the active tab by choosing *Show Coordinates* (de: *Koordinaten anzeigen*, es: *Mostrar coordinados*, fr: *Afficher les coordonnées*, jp: *マウスの座標を左下に表示*, zh: *在左下角显示坐标值*):
+Display the crosshair coordinates by choosing one of four options under *Show Coordinates At* (dde: *Koordinaten anzeigen bei*, es: *Mostrar coordinados*, fr: *Afficher les coordonnées*, jp: *カーソル座標の表示位置*, zh: *在左下角显示坐标值*):
 
 ![Coordinates in lower left corner](ToggleCoordinates.png "Coordinates are displayed in the lower left corner of the Edit view")
 
-By default, the coordinate numbers are displayed at a font size of 10 points. Change their size by pasting this line of code into the Macro Window (*Window > Macro Panel*) and pressing the *Run* button:
-
-    Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] = 18.0
-
-Change the value (18.0 in this example) to the desired point size.
+By default, the coordinate numbers are displayed at a font size of 10 points. You can change the size from the context menu.
 
 ### Installation
 
