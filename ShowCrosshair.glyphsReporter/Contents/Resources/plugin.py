@@ -13,7 +13,12 @@ from __future__ import division, print_function, unicode_literals
 import objc
 from GlyphsApp import *
 from GlyphsApp.plugins import *
-from math import radians, tan
+from math import radians, tan, hypot
+from AppKit import NSOnState
+# to set context menu set state
+# from AppKit import NSBundle
+# path = __file__
+# Bundle = NSBundle.bundleWithPath_(path[:path.rfind("Contents/Resources/")])
 
 class ShowCrosshair(ReporterPlugin):
 
@@ -28,65 +33,199 @@ class ShowCrosshair(ReporterPlugin):
 			'zh': u'✨准星线',
 		})
 		
-		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.universalCrosshair", 1)
+		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.alwaysCrosshair", 1)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showCoordinates", 0)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showThickness", 0)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.fontSize", 10.0)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.ignoreItalicAngle", 0)
+
+		# attempt deleting older default name
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]:
+			del Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]
 		
 		self.generalContextMenus = self.buildContextMenus()
-	
+		self.dragStart = None # drag origin point
+
 	@objc.python_method
-	def buildContextMenus(self, sender=None):
-		return [
-		{
-			'name': Glyphs.localize({
-				'en': u"Crosshair Options:", 
-				'de': u"Fadenkreuz-Einstellungen:", 
-				'es': u"Opciones de la cruz:", 
-				'fr': u"Options pour le réticule:",
-				'jp': u"照準プラグインオプション",
-				'zh': u"准星线选项",
-				}), 
-			'action': None,
-		},
-		{
-			'name': Glyphs.localize({
-				'en': u"Always Show Crosshair", 
-				'de': u"Fadenkreuz immer anzeigen", 
-				'es': u"Siempre mostrar la cruz", 
-				'fr': u"Toujours afficher le réticule",
-				'jp': u"照準を常に表示",
-				'zh': u"始终显示准星线",
-				}), 
-			'action': self.toggleUniversalCrosshair,
-			'state': Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"],
-		},
-		{
-			'name': Glyphs.localize({
-				'en': u"Show Coordinates", 
-				'de': u"Koordinaten anzeigen", 
-				'es': u"Mostrar coordinados", 
-				'fr': u"Afficher les coordonnées",
-				'jp': u"マウスの座標を左下に表示",
-				'zh': u"在左下角显示坐标值",
-				}), 
-			'action': self.toggleShowCoordinates,
-			'state': Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"],
-		},
-		{
-			'name': Glyphs.localize({
-				'en': u"Show Thicknesses", 
-				'de': u"Dicken anzeigen", 
-				'es': u"Mostrar grosores", 
-				'fr': u"Afficher les épaisseurs",
-				'jp': u"縦横の太さを表示",
-				'zh': u"显示纵横坐标差",
-				}), 
-			'action': self.toggleShowThickness,
-			'state': Glyphs.defaults["com.mekkablue.ShowCrosshair.showThickness"],
-		},
-		]
+	def buildContextMenus(self):
+
+		# Dot Icon
+		# dot = NSImage.imageWithSystemSymbolName_accessibilityDescription_("checkmark.circle", None)
+		dot = NSImage.imageWithSystemSymbolName_accessibilityDescription_("circlebadge.fill", None)
+		dot.setTemplate_(True)  # Makes the icon blend in with the toolbar.
+
+		# Empty list of context menu items
+		contextMenus = []
+
+		onlyWhileDraggingOption = {
+			'en': u"Only While Dragging", 
+			'de': u"Nur beim Ziehen", 
+			'es': u"Solo al arrastrar", 
+			'fr': u"Uniquement pendant le glissement",
+			'jp': u"ドラッグ中のみ表示",
+			'zh': u"仅在拖动时显示",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(onlyWhileDraggingOption), self.toggleUniversalCrosshair, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.alwaysCrosshair"] is False:
+			menu.setState_(NSOnState)
+		contextMenus.append({"menu": menu})
+
+		thicknessOption = {
+			'en': u"Show Thicknesses", 
+			'de': u"Dicken anzeigen", 
+			'es': u"Mostrar grosores", 
+			'fr': u"Afficher les épaisseurs",
+			'jp': u"縦横の太さを表示",
+			'zh': u"显示纵横坐标差",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(thicknessOption), self.toggleShowThickness, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.showThickness"]:
+			menu.setState_(NSOnState)
+		contextMenus.append({"menu": menu})
+
+		# ---------- Separator
+		contextMenus.append({"menu": NSMenuItem.separatorItem()})
+
+		coordinatePlacesTitle = {
+			'en': u"Show Coordinates At", 
+			'de': u"Koordinaten anzeigen bei", 
+			'es': u"Mostrar coordinados", 
+			'fr': u"Afficher les coordonnées",
+			'jp': u"カーソル座標の表示位置",
+			'zh': u"在左下角显示坐标值",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(coordinatePlacesTitle), None, "")
+		menu.setEnabled_(False)
+		contextMenus.append({"menu": menu})
+
+		bottomleftTitle = {
+			'en': u"Bottom Left", 
+			'de': u"Unten links", 
+			'es': u"Abajo a la izquierda",
+			'fr': u"En bas à gauche",
+			'jp': u"左下",
+			'zh': u"左下角",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(bottomleftTitle), self.toggleShowCoordinates0, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"] == 0:
+			menu.setState_(NSOnState)
+			menu.setOnStateImage_(dot)
+		contextMenus.append({"menu": menu})
+
+		topleftTitle = {
+			'en': u"Top Left", 
+			'de': u"Oben links", 
+			'es': u"Arriba a la izquierda",
+			'fr': u"En haut à gauche",
+			'jp': u"左上",
+			'zh': u"左上角",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(topleftTitle), self.toggleShowCoordinates1, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"] == 1:
+			menu.setState_(NSOnState)
+			menu.setOnStateImage_(dot)
+		contextMenus.append({"menu": menu})
+
+		alongAxisTitle = {
+			'en': u"Along Axis Lines", 
+			'de': u"Entlang der Achsenlinien", 
+			'es': u"A lo largo de las líneas del eje", 
+			'fr': u"Le long des lignes d'axe",
+			'jp': u"軸線の脇",
+			'zh': u"沿轴线",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(alongAxisTitle), self.toggleShowCoordinates2, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"] == 2:
+			menu.setState_(NSOnState)
+			menu.setOnStateImage_(dot)
+		contextMenus.append({"menu": menu})
+
+		nextToCursorTitle = {
+			'en': u"Next To Cursor", 
+			'de': u"Neben dem Mauszeiger", 
+			'es': u"Junto al cursor", 
+			'fr': u"À côté du curseur",
+			'jp': u"カーソルの脇",
+			'zh': u"光标旁边",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(nextToCursorTitle), self.toggleShowCoordinates3, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"] == 3:
+			menu.setState_(NSOnState)
+			menu.setOnStateImage_(dot)
+		contextMenus.append({"menu": menu})
+
+		# ---------- Separator
+		contextMenus.append({"menu": NSMenuItem.separatorItem()})
+
+		textSizesTitle = {
+			'en': u"Numbers Size", 
+			'de': u"Zahlengröße", 
+			'es': u"Tamaño de números", 
+			'fr': u"Taille des chiffres",
+			'jp': u"数字サイズ",
+			'zh': u"数字大小",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(textSizesTitle), None, "")
+		menu.setEnabled_(False)
+		contextMenus.append({"menu": menu})
+
+
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('8', self.toggleFontSize8, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 8:
+			menu.setState_(NSOnState)
+			menu.setOnStateImage_(dot)
+		contextMenus.append({"menu": menu})
+
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('9', self.toggleFontSize9, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 9:
+			menu.setState_(NSOnState)
+			menu.setOnStateImage_(dot)
+		contextMenus.append({"menu": menu})
+
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('10', self.toggleFontSize10, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 10:
+			menu.setState_(NSOnState)
+			menu.setOnStateImage_(dot)
+		contextMenus.append({"menu": menu})
+
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('12', self.toggleFontSize12, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 12:
+			menu.setState_(NSOnState)
+			menu.setOnStateImage_(dot)
+		contextMenus.append({"menu": menu})
+
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('14', self.toggleFontSize14, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 14:
+			menu.setState_(NSOnState)
+			menu.setOnStateImage_(dot)
+		contextMenus.append({"menu": menu})
+
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('18', self.toggleFontSize18, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 18:
+			menu.setState_(NSOnState)
+			menu.setOnStateImage_(dot)
+		contextMenus.append({"menu": menu})
+
+		# Put them into a sub menu
+		menu = NSMenuItem.alloc().init()
+		# menu.setTitle_('Show Crosshair')
+		menu.setTitle_(Glyphs.localize({
+			'en': u'Crosshair Settings',
+			'de': u'Fadenkreuzeinstellungen',
+			'es': u'Ajustes de la cruz',
+			'fr': u'Paramètres du réticule',
+			'jp': u'カーソル照準設定',
+			'zh': u'✨准星线设置',
+			}))
+		subMenu = NSMenu.alloc().init()
+
+		for item in contextMenus:
+
+			item['menu'].setTarget_(self)
+			subMenu.addItem_(item['menu'])
+		menu.setSubmenu_(subMenu)
+
+		return [{'menu': menu}]
 	
 	@objc.python_method
 	def drawCircle(self, center, size):
@@ -103,7 +242,7 @@ class ShowCrosshair(ReporterPlugin):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsDragging = toolEventHandler.dragging()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
-		shouldDisplay = (Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.universalCrosshair"] and not toolIsTextTool) or toolIsDragging
+		shouldDisplay = (Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.alwaysCrosshair"] and not toolIsTextTool) or toolIsDragging
 		
 		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and shouldDisplay:
 			font = Glyphs.font
@@ -169,7 +308,22 @@ class ShowCrosshair(ReporterPlugin):
 				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize/scale,0.0),
 				NSForegroundColorAttributeName: NSColor.textColor()
 			}
-			
+
+			# dragging width and height
+			if font.tool == 'SelectTool' and toolIsDragging:
+				origin = self.dragStart
+				width = round(mousePosition.x-origin.x)
+				height = round(mousePosition.y-origin.y)
+
+				widthText = NSAttributedString.alloc().initWithString_attributes_(
+					"%s × %s" % (str(abs(width)), str(abs(height))),
+					thicknessFontAttributes
+				)
+
+				textAlignment = 2 # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
+				sizePos = (max(origin.x,mousePosition.x)-4/scale, min(origin.y,mousePosition.y)-fontSize-4)
+				widthText.drawAtPoint_alignment_(sizePos, textAlignment)
+
 			# number badges on vertical slice:
 			for key in ys:
 				item = ys[key]
@@ -180,7 +334,7 @@ class ShowCrosshair(ReporterPlugin):
 					if italicAngle:
 						x = self.italicize( NSPoint(x,y), italicAngle=italicAngle, pivotalY=sliceY ).x
 					self.drawThicknessBadge(scale, fontSize, x, y, item)
-					self.drawThicknessText(thicknessFontAttributes, x, y, item)
+					self.drawThicknessText(scale, thicknessFontAttributes, x, y, item)
 					
 			# number badges on horizontal slice:
 			for key in xs:
@@ -189,8 +343,8 @@ class ShowCrosshair(ReporterPlugin):
 				if item != 0:
 					x, y = key, sliceY
 					self.drawThicknessBadge(scale, fontSize, x, y, item)
-					self.drawThicknessText(thicknessFontAttributes, x, y, item)
-	
+					self.drawThicknessText(scale, thicknessFontAttributes, x, y, item)
+
 	@objc.python_method
 	def italicize( self, thisPoint, italicAngle=0.0, pivotalY=0.0 ):
 		"""
@@ -216,7 +370,7 @@ class ShowCrosshair(ReporterPlugin):
 		toolIsDragging = toolEventHandler.dragging()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 		crossHairCenter = self.mousePosition()
-		shouldDisplay = (Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.universalCrosshair"] and not toolIsTextTool) or toolIsDragging
+		shouldDisplay = (Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.alwaysCrosshair"] and not toolIsTextTool) or toolIsDragging
 		
 		if crossHairCenter.x < NSNotFound and shouldDisplay:
 			# determine italic angle:
@@ -229,7 +383,9 @@ class ShowCrosshair(ReporterPlugin):
 			
 			# set up bezierpath:
 			offset = 1000000
-			NSColor.disabledControlTextColor().set() # subtle grey
+			crosshairColor = NSColor.disabledControlTextColor() # subtle grey
+			crosshairColor = crosshairColor.colorWithAlphaComponent_(0.25)
+			crosshairColor.set()
 			crosshairPath = NSBezierPath.bezierPath()
 			crosshairPath.setLineWidth_( 0.75 / self.getScale() )
 
@@ -254,45 +410,119 @@ class ShowCrosshair(ReporterPlugin):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 
-		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showCoordinates"] and not toolIsTextTool:
-			mousePosition = self.mousePosition()
-			coordinateText = "%4d, %4d" % (
-				round(mousePosition.x), 
-				round(mousePosition.y)
-			)
-			
+		# display at bottom left or top left
+		coordinatesOption = Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"]
+		if not toolIsTextTool:
+
 			fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
 			fontAttributes = { 
 				#NSFontAttributeName: NSFont.labelFontOfSize_(10.0),
 				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
 				NSForegroundColorAttributeName: NSColor.textColor()
 			}
+
+			mousePosition = self.mousePosition()
+			coordinatesText = "%4d, %4d" % (round(mousePosition.x), round(mousePosition.y))
 			displayText = NSAttributedString.alloc().initWithString_attributes_(
-				coordinateText, 
+				coordinatesText, 
 				fontAttributes
 			)
-			textAlignment = 0 # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
+			origin = self.controller.viewPort.origin
+
+			if coordinatesOption == 0: # show at bottom left
+				textAlignment = 0 # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
 			#font = layer.parent.parent
-			lowerLeftCorner = self.controller.viewPort.origin
-			displayText.drawAtPoint_alignment_(lowerLeftCorner, textAlignment)
+				displayLocation = origin.x+10, origin.y+10
+				displayText.drawAtPoint_alignment_(displayLocation, textAlignment)
+
+			elif coordinatesOption == 1: # show at top left
+				displayLocation = origin.x+10, origin.y+self.controller.viewPort.size.height-fontSize
+				textAlignment = 6
+				displayText.drawAtPoint_alignment_(displayLocation, textAlignment)
+			
+			else:
+				mousePosInWindow = Glyphs.currentEvent().locationInWindow()
+				absMousePosition = NSPoint(origin.x + mousePosInWindow.x, origin.y + mousePosInWindow.y)
+
+				if coordinatesOption == 2: # show along axis
+					mouseXText = NSAttributedString.alloc().initWithString_attributes_(
+						str(round(mousePosition.x)),
+						fontAttributes
+					)
+					mouseYText = NSAttributedString.alloc().initWithString_attributes_(
+						str(round(mousePosition.y)),
+						fontAttributes
+					)
+					textAlignment = 0
+					displayXLocation = absMousePosition.x+10, origin.y+self.controller.viewPort.size.height-fontSize-10
+					mouseXText.drawAtPoint_alignment_(displayXLocation, textAlignment)
+					displayYLocation = origin.x+10, absMousePosition.y-35+10 # 35 window bottom height?
+					mouseYText.drawAtPoint_alignment_(displayYLocation, textAlignment)
+				else: # shor next to mouse cursor
+					mousePosText = NSAttributedString.alloc().initWithString_attributes_(
+						coordinatesText,
+						fontAttributes
+					)
+					textAlignment = 0
+					mousePosText.drawAtPoint_alignment_((absMousePosition.x+10, absMousePosition.y-fontSize-35-20), textAlignment)
 
 	@objc.python_method
 	def drawThicknessBadge(self, scale, fontSize, x, y, value):
+		mousePosition = self.mousePosition()
+		# set opacity if badge is too close to mouse cursor
+		distFromCursor = hypot(mousePosition.x-x, mousePosition.y-y)
+		fadeMin = 30/scale # distance from mouse curser under which the badge starts to fade.
+		fadeMax = 20/scale # distance from mouse curser under which the badge disappears completely.
+		if distFromCursor >= fadeMin:
+			opacity = 1
+		elif distFromCursor <= fadeMax:
+			opacity = 0
+		else:
+			opacity = (distFromCursor - fadeMax)/(fadeMin-fadeMax)
+
 		width = len(str(value)) * fontSize * 0.7 / scale
 		rim = fontSize * 0.3 / scale
 		badge = NSRect()
 		badge.origin = NSPoint( x-width/2, y-fontSize/2-rim )
 		badge.size = NSSize( width, fontSize + rim*2 )
-		NSColor.textBackgroundColor().set()
-		NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( badge, fontSize*0.5, fontSize*0.5 ).fill()
+		if opacity > 0:
+			if opacity == 1:
+				NSColor.textBackgroundColor().set()
+			else:
+				textBackgroundColor = NSColor.textBackgroundColor().colorWithAlphaComponent_(opacity)
+				textBackgroundColor.set()
+			NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( badge, fontSize*0.5, fontSize*0.5 ).fill()
 
 	@objc.python_method
-	def drawThicknessText(self, thicknessFontAttributes, x, y, item):
-		displayText = NSAttributedString.alloc().initWithString_attributes_(
-			str(item), 
-			thicknessFontAttributes
-		)
-		displayText.drawAtPoint_alignment_((x, y), 4)
+	def drawThicknessText(self, scale, thicknessFontAttributes, x, y, item):
+		mousePosition = self.mousePosition()
+		# set opacity if badge is too close to mouse cursor
+		distFromCursor = hypot(mousePosition.x-x, mousePosition.y-y)
+		fadeMin = 30/scale # distance from mouse curser under which the badge starts to fade.
+		fadeMax = 20/scale # distance from mouse curser under which the badge disappears completely.
+		if distFromCursor >= fadeMin:
+			opacity = 1
+		elif distFromCursor <= fadeMax:
+			opacity = 0
+		else:
+			opacity = (distFromCursor - fadeMax)/(fadeMin-fadeMax)
+
+		if opacity > 0:
+			if opacity < 1:
+				newTextColor = NSColor.textColor().colorWithAlphaComponent_(opacity)
+				thicknessFontAttributes[NSForegroundColorAttributeName] = newTextColor
+			displayText = NSAttributedString.alloc().initWithString_attributes_(
+				str(item), 
+				thicknessFontAttributes
+			)
+			displayText.drawAtPoint_alignment_((x, y), 4)
+
+	def mouseDown_(self, notification):
+		self.dragStart = self.mousePosition()
+
+	def mouseUp_(self, notification):
+		self.dragStart = None
+		self.dragging = False
 
 	def mouseDidMove_(self, notification):
 		if hasattr(self, 'controller') and self.controller:
@@ -302,28 +532,50 @@ class ShowCrosshair(ReporterPlugin):
 
 	def willActivate(self):
 		Glyphs.addCallback(self.mouseDidMove_, MOUSEMOVED)
-	
+		Glyphs.addCallback(self.mouseDown_, MOUSEDOWN)
+		Glyphs.addCallback(self.mouseUp_, MOUSEUP)
 	def willDeactivate(self):
 		try:
 			Glyphs.removeCallback(self.mouseDidMove_, MOUSEMOVED)
+			Glyphs.removeCallback(self.mouseDown_, MOUSEDOWN)
+			Glyphs.removeCallback(self.mouseUp_, MOUSEUP)
 		except:
 			import traceback
 			NSLog(traceback.format_exc())
 	
 	def toggleUniversalCrosshair(self):
-		self.toggleSetting("universalCrosshair")
-	
-	def toggleShowCoordinates(self):
-		self.toggleSetting("showCoordinates")
-
+		self.toggleSetting("alwaysCrosshair")
 	def toggleShowThickness(self):
 		self.toggleSetting("showThickness")
-	
+	def toggleShowCoordinates0(self): # bottom left
+		self.toggleSetting("showCoordinates",0)
+	def toggleShowCoordinates1(self): # top left
+		self.toggleSetting("showCoordinates",1)
+	def toggleShowCoordinates2(self): # along axis
+		self.toggleSetting("showCoordinates",2)
+	def toggleShowCoordinates3(self): # next to cursor
+		self.toggleSetting("showCoordinates",3)
+	def toggleFontSize8(self): # next to cursor
+		self.toggleSetting("fontSize",8)
+	def toggleFontSize9(self): # next to cursor
+		self.toggleSetting("fontSize",9)
+	def toggleFontSize10(self): # next to cursor
+		self.toggleSetting("fontSize",10)
+	def toggleFontSize12(self): # next to cursor
+		self.toggleSetting("fontSize",12)
+	def toggleFontSize14(self): # next to cursor
+		self.toggleSetting("fontSize",14)
+	def toggleFontSize18(self): # next to cursor
+		self.toggleSetting("fontSize",18)
+
 	@objc.python_method
-	def toggleSetting(self, prefName):
-		pref = "com.mekkablue.ShowCrosshair.%s" % prefName
-		oldSetting = Glyphs.boolDefaults[pref]
-		Glyphs.defaults[pref] = int(not oldSetting)
+	def toggleSetting(self, prefName, extraParameter=None):
+		if extraParameter is not None:
+			Glyphs.defaults["com.mekkablue.ShowCrosshair.%s" % prefName] = extraParameter
+		else:
+			pref = "com.mekkablue.ShowCrosshair.%s" % prefName
+			oldSetting = Glyphs.boolDefaults[pref]
+			Glyphs.defaults[pref] = int(not oldSetting)
 		self.generalContextMenus = self.buildContextMenus()
 	
 	# def addMenuItemsForEvent_toMenu_(self, event, contextMenu):
