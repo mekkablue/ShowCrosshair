@@ -51,9 +51,13 @@ class ShowCrosshair(ReporterPlugin):
 	def buildContextMenus(self):
 
 		# Dot Icon
-		# dot = NSImage.imageWithSystemSymbolName_accessibilityDescription_("checkmark.circle", None)
-		dot = NSImage.imageWithSystemSymbolName_accessibilityDescription_("circlebadge.fill", None)
-		dot.setTemplate_(True)  # Makes the icon blend in with the toolbar.
+		dot = None
+		try:
+			# dot = NSImage.imageWithSystemSymbolName_accessibilityDescription_("checkmark.circle", None)
+			dot = NSImage.imageWithSystemSymbolName_accessibilityDescription_("circlebadge.fill", None)
+			dot.setTemplate_(True)  # Makes the icon blend in with the toolbar.
+		except:
+			pass
 
 		# Empty list of context menu items
 		contextMenus = []
@@ -110,7 +114,8 @@ class ShowCrosshair(ReporterPlugin):
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(bottomleftTitle), self.toggleShowCoordinates0, "")
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"] == 0:
 			menu.setState_(NSOnState)
-			menu.setOnStateImage_(dot)
+			if dot:
+				menu.setOnStateImage_(dot)
 		contextMenus.append({"menu": menu})
 
 		topleftTitle = {
@@ -124,7 +129,8 @@ class ShowCrosshair(ReporterPlugin):
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(topleftTitle), self.toggleShowCoordinates1, "")
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"] == 1:
 			menu.setState_(NSOnState)
-			menu.setOnStateImage_(dot)
+			if dot:
+				menu.setOnStateImage_(dot)
 		contextMenus.append({"menu": menu})
 
 		alongAxisTitle = {
@@ -138,7 +144,8 @@ class ShowCrosshair(ReporterPlugin):
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(alongAxisTitle), self.toggleShowCoordinates2, "")
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"] == 2:
 			menu.setState_(NSOnState)
-			menu.setOnStateImage_(dot)
+			if dot:
+				menu.setOnStateImage_(dot)
 		contextMenus.append({"menu": menu})
 
 		nextToCursorTitle = {
@@ -152,7 +159,8 @@ class ShowCrosshair(ReporterPlugin):
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(nextToCursorTitle), self.toggleShowCoordinates3, "")
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"] == 3:
 			menu.setState_(NSOnState)
-			menu.setOnStateImage_(dot)
+			if dot:
+				menu.setOnStateImage_(dot)
 		contextMenus.append({"menu": menu})
 
 		# ---------- Separator
@@ -174,37 +182,43 @@ class ShowCrosshair(ReporterPlugin):
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('8', self.toggleFontSize8, "")
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 8:
 			menu.setState_(NSOnState)
-			menu.setOnStateImage_(dot)
+			if dot:
+				menu.setOnStateImage_(dot)
 		contextMenus.append({"menu": menu})
 
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('9', self.toggleFontSize9, "")
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 9:
 			menu.setState_(NSOnState)
-			menu.setOnStateImage_(dot)
+			if dot:
+				menu.setOnStateImage_(dot)
 		contextMenus.append({"menu": menu})
 
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('10', self.toggleFontSize10, "")
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 10:
 			menu.setState_(NSOnState)
-			menu.setOnStateImage_(dot)
+			if dot:
+				menu.setOnStateImage_(dot)
 		contextMenus.append({"menu": menu})
 
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('12', self.toggleFontSize12, "")
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 12:
 			menu.setState_(NSOnState)
-			menu.setOnStateImage_(dot)
+			if dot:
+				menu.setOnStateImage_(dot)
 		contextMenus.append({"menu": menu})
 
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('14', self.toggleFontSize14, "")
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 14:
 			menu.setState_(NSOnState)
-			menu.setOnStateImage_(dot)
+			if dot:
+				menu.setOnStateImage_(dot)
 		contextMenus.append({"menu": menu})
 
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('18', self.toggleFontSize18, "")
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"] == 18:
 			menu.setState_(NSOnState)
-			menu.setOnStateImage_(dot)
+			if dot:
+				menu.setOnStateImage_(dot)
 		contextMenus.append({"menu": menu})
 
 		# Put them into a sub menu
