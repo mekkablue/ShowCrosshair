@@ -456,7 +456,10 @@ class ShowCrosshair(ReporterPlugin):
 				displayText.drawAtPoint_alignment_(displayLocation, textAlignment)
 
 			else:
-				mousePosInWindow = Glyphs.currentEvent().locationInWindow()
+				event = Glyphs.currentEvent()
+				if not event:
+					return
+				mousePosInWindow = event.locationInWindow()
 				absMousePosition = NSPoint(origin.x + mousePosInWindow.x, origin.y + mousePosInWindow.y)
 
 				if coordinatesOption == 2:  # show along axis
