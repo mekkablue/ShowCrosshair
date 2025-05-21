@@ -6,6 +6,8 @@ This is a plugin for the [Glyphs font editor](http://glyphsapp.com/) by Georg Se
 
 Depending on your crosshair setting, it shows a crosshair either always, or only while you drag your mouse pointer with the mouse button held down. Switch between states via the context menu: right click and select or deselect *Only While Dragging* (de: *Nur beim Ziehen*, es: *Solo al arrastrar*, fr: *Uniquement pendant le glissement*, jp: *ドラッグ中のみ表示*, zh: *仅在拖动时显示*).
 
+Toggle display of vertical axis when italic axis is set with the context menu option *Vertical Axis in Italic* (de: *Vertikale Achse in Kursivschrift*, es: *Eje vertical en cursiva*, fr: *Axe vertical en italique*, jp: *イタリック時の縦軸*, zh: *斜体纵轴*).
+
 Toggle the display of measurements between intersections with the context menu option *Show Thicknesses* (de: *Dicken anzeigen*, es: *Mostrar grosores*, fr: *Afficher les épaisseurs*, jp: *縦横の太さを表示*, zh: *显示纵横坐标差*).
 
 ![Crosshair options](ToggleCrosshairOptions.png "Toggling Crosshair options in the context menu")

@@ -213,12 +213,12 @@ class ShowCrosshair(ReporterPlugin):
 		contextMenus.append({"menu": NSMenuItem.separatorItem()})
 
 		textSizesTitle = {
-			'en': u"Numbers Size", 
-			'de': u"Zahlengröße", 
-			'es': u"Tamaño de números", 
-			'fr': u"Taille des chiffres",
-			'jp': u"数字サイズ",
-			'zh': u"数字大小",
+			'en': u"Text Size", 
+			'de': u"Textgröße", 
+			'es': u"Tamaño del texto", 
+			'fr': u"Taille du texte",
+			'jp': u"フォントサイズ",
+			'zh': u"文字大小",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(textSizesTitle), None, "")
 		menu.setEnabled_(False)
