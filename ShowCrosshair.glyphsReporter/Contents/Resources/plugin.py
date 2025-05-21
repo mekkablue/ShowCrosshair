@@ -35,9 +35,10 @@ class ShowCrosshair(ReporterPlugin):
 		
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.alwaysCrosshair", 1)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showCoordinates", 0)
+		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.italicAxis", 0)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showThickness", 0)
 		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.fontSize", 10.0)
-		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.ignoreItalicAngle", 0)
+		# Glyphs.registerDefault("com.mekkablue.ShowCrosshair.ignoreItalicAngle", 0)
 
 		# attempt deleting older default name
 		if Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"]:
@@ -86,11 +87,65 @@ class ShowCrosshair(ReporterPlugin):
 		# ---------- Separator
 		contextMenus.append({"menu": NSMenuItem.separatorItem()})
 
+		italicAxisTitle = {
+			'en': u"Vertical Axis in Italic",
+			'de': u"Vertikale Achse in Kursivschrift", 
+			'es': u"Eje vertical en cursiva", 
+			'fr': u"Axe vertical en italique",
+			'jp': u"イタリック時の縦軸",
+			'zh': u"斜体纵轴",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(italicAxisTitle), None, "")
+		menu.setEnabled_(False)
+		contextMenus.append({"menu": menu})
+
+		verticalOnlyOption = {
+			'en': u"Always 90°",
+			'de': u"Immer 90°",
+			'es': u"Siempre 90°",
+			'fr': u"Toujours à 90°",
+			'jp': u"常に90°",
+			'zh': u"始终 90°",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(verticalOnlyOption), self.toggleShowItalic0, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.italicAxis"] == 0:
+			menu.setState_(NSOnState)
+		contextMenus.append({"menu": menu})
+
+		italicOnlyOption = {
+			'en': u"Use Italic Angle",
+			'de': u"Kursivschrift verwenden",
+			'es': u"Usar ángulo cursivo",
+			'fr': u"Utiliser l'angle italique",
+			'jp': u"イタリック角を使用",
+			'zh': u"使用斜角",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(italicOnlyOption), self.toggleShowItalic1, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.italicAxis"] == 1:
+			menu.setState_(NSOnState)
+		contextMenus.append({"menu": menu})
+
+		bothVerticalItalicOption = {
+			'en': u"Both",
+			'de': u"Beide",
+			'es': u"Ambos",
+			'fr': u"Les deux",
+			'jp': u"両方を表示",
+			'zh': u"显示两者",
+			}
+		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(bothVerticalItalicOption), self.toggleShowItalic2, "")
+		if Glyphs.defaults["com.mekkablue.ShowCrosshair.italicAxis"] == 2:
+			menu.setState_(NSOnState)
+		contextMenus.append({"menu": menu})
+
+		# ---------- Separator
+		contextMenus.append({"menu": NSMenuItem.separatorItem()})
+
 		coordinatePlacesTitle = {
-			'en': u"Show Coordinates At", 
-			'de': u"Koordinaten anzeigen bei", 
-			'es': u"Mostrar coordinados", 
-			'fr': u"Afficher les coordonnées",
+			'en': u"Show Cursor Coordinates At", 
+			'de': u"Cursorkoordinaten anzeigen bei", 
+			'es': u"Mostrar las coordinados del cursor", 
+			'fr': u"Afficher les coordonnées du curseur",
 			'jp': u"カーソル座標の表示位置",
 			'zh': u"在左下角显示坐标值",
 			}
@@ -243,6 +298,7 @@ class ShowCrosshair(ReporterPlugin):
 		toolIsDragging = toolEventHandler.dragging()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 		shouldDisplay = (Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.alwaysCrosshair"] and not toolIsTextTool) or toolIsDragging
+		useItalicAxis = Glyphs.defaults["com.mekkablue.ShowCrosshair.italicAxis"] # 0=vertical, 1=italic, 2=both
 		
 		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and shouldDisplay:
 			font = Glyphs.font
@@ -291,11 +347,19 @@ class ShowCrosshair(ReporterPlugin):
 				# GLYPHS 2
 				italicAngle = master.italicAngle
 			
-			verticalIntersections = layer.calculateIntersectionsStartPoint_endPoint_decompose_(
-				self.italicize( NSPoint(sliceX,minY), italicAngle=italicAngle, pivotalY=sliceY ),
-				self.italicize( NSPoint(sliceX,maxY), italicAngle=italicAngle, pivotalY=sliceY ),
-				True,
-				)
+			# use italic
+			if italicAngle != 0 and useItalicAxis == 1:
+				verticalIntersections = layer.calculateIntersectionsStartPoint_endPoint_decompose_(
+					self.italicize( NSPoint(sliceX,minY), italicAngle=italicAngle, pivotalY=sliceY ),
+					self.italicize( NSPoint(sliceX,maxY), italicAngle=italicAngle, pivotalY=sliceY ),
+					True,
+					)
+			else:
+				verticalIntersections = layer.calculateIntersectionsStartPoint_endPoint_decompose_(
+					self.italicize( NSPoint(sliceX,minY), italicAngle=0, pivotalY=sliceY ),
+					self.italicize( NSPoint(sliceX,maxY), italicAngle=0, pivotalY=sliceY ),
+					True,
+					)
 			for inter in verticalIntersections[1:-1]:
 				self.drawCircle(inter, handleSize)
 				if prev != minY:
@@ -331,8 +395,10 @@ class ShowCrosshair(ReporterPlugin):
 				if item != 0:
 					x, y = sliceX, key
 					# adjust x for italic angle if necessary:
-					if italicAngle:
+					if italicAngle and useItalicAxis == 1:
 						x = self.italicize( NSPoint(x,y), italicAngle=italicAngle, pivotalY=sliceY ).x
+					else:
+						x = self.italicize( NSPoint(x,y), italicAngle=0, pivotalY=sliceY ).x
 					self.drawThicknessBadge(scale, fontSize, x, y, item)
 					self.drawThicknessText(scale, thicknessFontAttributes, x, y, item)
 					
@@ -353,16 +419,16 @@ class ShowCrosshair(ReporterPlugin):
 		around which the italic slanting is executed, usually half x-height.
 		Usage: myPoint = italicize(myPoint,10,xHeight*0.5)
 		"""
-		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.ignoreItalicAngle"]:
-			return thisPoint
-		else:
-			x = thisPoint.x
-			yOffset = thisPoint.y - pivotalY # calculate vertical offset
-			italicAngle = radians( italicAngle ) # convert to radians
-			tangens = tan( italicAngle ) # math.tan needs radians
-			horizontalDeviance = tangens * yOffset # vertical distance from pivotal point
-			x += horizontalDeviance # x of point that is yOffset from pivotal point
-			return NSPoint( x, thisPoint.y )
+		# if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.ignoreItalicAngle"]:
+		# 	return thisPoint
+		# else:
+		x = thisPoint.x
+		yOffset = thisPoint.y - pivotalY # calculate vertical offset
+		italicAngle = radians( italicAngle ) # convert to radians
+		tangens = tan( italicAngle ) # math.tan needs radians
+		horizontalDeviance = tangens * yOffset # vertical distance from pivotal point
+		x += horizontalDeviance # x of point that is yOffset from pivotal point
+		return NSPoint( x, thisPoint.y )
 	
 	@objc.python_method
 	def background(self, layer):
@@ -390,8 +456,13 @@ class ShowCrosshair(ReporterPlugin):
 			crosshairPath.setLineWidth_( 0.75 / self.getScale() )
 
 			# vertical line:
-			crosshairPath.moveToPoint_( self.italicize( NSPoint(crossHairCenter.x,-offset), italicAngle=italicAngle, pivotalY=crossHairCenter.y) )
-			crosshairPath.lineToPoint_( self.italicize( NSPoint(crossHairCenter.x,+offset), italicAngle=italicAngle, pivotalY=crossHairCenter.y) )
+			italicAxis = Glyphs.defaults["com.mekkablue.ShowCrosshair.italicAxis"]
+			if italicAxis in (0, 2): # vertical only or both
+				crosshairPath.moveToPoint_( self.italicize( NSPoint(crossHairCenter.x,-offset), italicAngle=0, pivotalY=crossHairCenter.y) )
+				crosshairPath.lineToPoint_( self.italicize( NSPoint(crossHairCenter.x,+offset), italicAngle=0, pivotalY=crossHairCenter.y) )
+			if italicAxis in (1, 2): # italic only or both
+				crosshairPath.moveToPoint_( self.italicize( NSPoint(crossHairCenter.x,-offset), italicAngle=italicAngle, pivotalY=crossHairCenter.y) )
+				crosshairPath.lineToPoint_( self.italicize( NSPoint(crossHairCenter.x,+offset), italicAngle=italicAngle, pivotalY=crossHairCenter.y) )
 			
 			# horizontal line:
 			crosshairPath.moveToPoint_( NSPoint(-offset,crossHairCenter.y) )
@@ -407,64 +478,67 @@ class ShowCrosshair(ReporterPlugin):
 	
 	@objc.python_method
 	def foregroundInViewCoords(self, layer=None):
-		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
-		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
+		try:
+			toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
+			toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 
-		# display at bottom left or top left
-		coordinatesOption = Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"]
-		if not toolIsTextTool:
+			# display at bottom left or top left
+			coordinatesOption = Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"]
+			if not toolIsTextTool:
 
-			fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
-			fontAttributes = { 
-				#NSFontAttributeName: NSFont.labelFontOfSize_(10.0),
-				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
-				NSForegroundColorAttributeName: NSColor.textColor()
-			}
+				fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
+				fontAttributes = { 
+					#NSFontAttributeName: NSFont.labelFontOfSize_(10.0),
+					NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
+					NSForegroundColorAttributeName: NSColor.textColor()
+				}
 
-			mousePosition = self.mousePosition()
-			coordinatesText = "%4d, %4d" % (round(mousePosition.x), round(mousePosition.y))
-			displayText = NSAttributedString.alloc().initWithString_attributes_(
-				coordinatesText, 
-				fontAttributes
-			)
-			origin = self.controller.viewPort.origin
+				mousePosition = self.mousePosition()
+				coordinatesText = "%4d, %4d" % (round(mousePosition.x), round(mousePosition.y))
+				displayText = NSAttributedString.alloc().initWithString_attributes_(
+					coordinatesText, 
+					fontAttributes
+				)
+				origin = self.controller.viewPort.origin
 
-			if coordinatesOption == 0: # show at bottom left
-				textAlignment = 0 # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
-			#font = layer.parent.parent
-				displayLocation = origin.x+10, origin.y+10
-				displayText.drawAtPoint_alignment_(displayLocation, textAlignment)
+				if coordinatesOption == 0: # show at bottom left
+					textAlignment = 0 # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
+				#font = layer.parent.parent
+					displayLocation = origin.x+10, origin.y+10
+					displayText.drawAtPoint_alignment_(displayLocation, textAlignment)
 
-			elif coordinatesOption == 1: # show at top left
-				displayLocation = origin.x+10, origin.y+self.controller.viewPort.size.height-fontSize
-				textAlignment = 6
-				displayText.drawAtPoint_alignment_(displayLocation, textAlignment)
-			
-			else:
-				mousePosInWindow = Glyphs.currentEvent().locationInWindow()
-				absMousePosition = NSPoint(origin.x + mousePosInWindow.x, origin.y + mousePosInWindow.y)
+				elif coordinatesOption == 1: # show at top left
+					displayLocation = origin.x+10, origin.y+self.controller.viewPort.size.height-fontSize
+					textAlignment = 6
+					displayText.drawAtPoint_alignment_(displayLocation, textAlignment)
+				
+				else:
+					mousePosInWindow = Glyphs.currentEvent().locationInWindow()
+					absMousePosition = NSPoint(origin.x + mousePosInWindow.x, origin.y + mousePosInWindow.y)
 
-				if coordinatesOption == 2: # show along axis
-					mouseXText = NSAttributedString.alloc().initWithString_attributes_(
-						str(round(mousePosition.x)),
-						fontAttributes
-					)
-					mouseYText = NSAttributedString.alloc().initWithString_attributes_(
-						str(round(mousePosition.y)),
-						fontAttributes
-					)
-					textAlignment = 0
-					displayXLocation = absMousePosition.x+10, origin.y+self.controller.viewPort.size.height-fontSize-10
-					mouseXText.drawAtPoint_alignment_(displayXLocation, textAlignment)
-					displayYLocation = origin.x+10, absMousePosition.y-35+10 # 35 window bottom height?
-					mouseYText.drawAtPoint_alignment_(displayYLocation, textAlignment)
-				else: # shor next to mouse cursor
-					mousePosText = NSAttributedString.alloc().initWithString_attributes_(
-						coordinatesText,
-						fontAttributes
-					)
-					textAlignment = 0
-					mousePosText.drawAtPoint_alignment_((absMousePosition.x+10, absMousePosition.y-fontSize-35-20), textAlignment)
+					if coordinatesOption == 2: # show along axis
+						mouseXText = NSAttributedString.alloc().initWithString_attributes_(
+							str(round(mousePosition.x)),
+							fontAttributes
+						)
+						mouseYText = NSAttributedString.alloc().initWithString_attributes_(
+							str(round(mousePosition.y)),
+							fontAttributes
+						)
+						textAlignment = 0
+						displayXLocation = absMousePosition.x+10, origin.y+self.controller.viewPort.size.height-fontSize-10
+						mouseXText.drawAtPoint_alignment_(displayXLocation, textAlignment)
+						displayYLocation = origin.x+10, absMousePosition.y-35+10 # 35 window bottom height?
+						mouseYText.drawAtPoint_alignment_(displayYLocation, textAlignment)
+					else: # shor next to mouse cursor
+						mousePosText = NSAttributedString.alloc().initWithString_attributes_(
+							coordinatesText,
+							fontAttributes
+						)
+						textAlignment = 0
+						mousePosText.drawAtPoint_alignment_((absMousePosition.x+10, absMousePosition.y-fontSize-35-20), textAlignment)
+		except:
+			pass
 
 	@objc.python_method
 	def drawThicknessBadge(self, scale, fontSize, x, y, value):
@@ -481,17 +555,17 @@ class ShowCrosshair(ReporterPlugin):
 			opacity = (distFromCursor - fadeMax)/(fadeMin-fadeMax)
 
 		width = len(str(value)) * fontSize * 0.7 / scale
-		rim = fontSize * 0.3 / scale
+		rim = fontSize * 0.3 / scale # padding
 		badge = NSRect()
-		badge.origin = NSPoint( x-width/2, y-fontSize/2-rim )
-		badge.size = NSSize( width, fontSize + rim*2 )
+		badge.origin = NSPoint( x-width/2, y-fontSize/scale/2-rim )
+		badge.size = NSSize( width, fontSize/scale + rim*2 )
 		if opacity > 0:
 			if opacity == 1:
 				NSColor.textBackgroundColor().set()
 			else:
 				textBackgroundColor = NSColor.textBackgroundColor().colorWithAlphaComponent_(opacity)
 				textBackgroundColor.set()
-			NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( badge, fontSize*0.5, fontSize*0.5 ).fill()
+			NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_( badge, fontSize*0.5/scale, fontSize*0.5/scale ).fill()
 
 	@objc.python_method
 	def drawThicknessText(self, scale, thicknessFontAttributes, x, y, item):
@@ -547,6 +621,12 @@ class ShowCrosshair(ReporterPlugin):
 		self.toggleSetting("alwaysCrosshair")
 	def toggleShowThickness(self):
 		self.toggleSetting("showThickness")
+	def toggleShowItalic0(self):
+		self.toggleSetting("italicAxis",0)
+	def toggleShowItalic1(self):
+		self.toggleSetting("italicAxis",1)
+	def toggleShowItalic2(self):
+		self.toggleSetting("italicAxis",2)
 	def toggleShowCoordinates0(self): # bottom left
 		self.toggleSetting("showCoordinates",0)
 	def toggleShowCoordinates1(self): # top left
