@@ -29,7 +29,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u'Fadenkreuz',
 			'es': u'cruz',
 			'fr': u'réticule',
-			'jp': u'カーソル照準',
+			'ja': u'カーソル照準',
 			'zh': u'✨准星线',
 		})
 		
@@ -63,7 +63,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Nur beim Ziehen", 
 			'es': u"Solo al arrastrar", 
 			'fr': u"Uniquement pendant le glissement",
-			'jp': u"ドラッグ中のみ表示",
+			'ja': u"ドラッグ中のみ表示",
 			'zh': u"仅在拖动时显示",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(onlyWhileDraggingOption), self.toggleUniversalCrosshair, "")
@@ -76,7 +76,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Dicken anzeigen", 
 			'es': u"Mostrar grosores", 
 			'fr': u"Afficher les épaisseurs",
-			'jp': u"縦横の太さを表示",
+			'ja': u"縦横の太さを表示",
 			'zh': u"显示纵横坐标差",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(thicknessOption), self.toggleShowThickness, "")
@@ -92,7 +92,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Vertikale Achse in Kursivschrift", 
 			'es': u"Eje vertical en cursiva", 
 			'fr': u"Axe vertical en italique",
-			'jp': u"イタリック時の縦軸",
+			'ja': u"イタリック時の縦軸",
 			'zh': u"斜体纵轴",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(italicAxisTitle), None, "")
@@ -104,7 +104,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Immer 90°",
 			'es': u"Siempre 90°",
 			'fr': u"Toujours à 90°",
-			'jp': u"常に90°",
+			'ja': u"常に90°",
 			'zh': u"始终 90°",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(verticalOnlyOption), self.toggleShowItalic0, "")
@@ -117,7 +117,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Kursivschrift verwenden",
 			'es': u"Usar ángulo cursivo",
 			'fr': u"Utiliser l'angle italique",
-			'jp': u"イタリック角を使用",
+			'ja': u"イタリック角を使用",
 			'zh': u"使用斜角",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(italicOnlyOption), self.toggleShowItalic1, "")
@@ -130,7 +130,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Beide",
 			'es': u"Ambos",
 			'fr': u"Les deux",
-			'jp': u"両方を表示",
+			'ja': u"両方を表示",
 			'zh': u"显示两者",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(bothVerticalItalicOption), self.toggleShowItalic2, "")
@@ -146,7 +146,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Cursorkoordinaten anzeigen bei", 
 			'es': u"Mostrar las coordinados del cursor", 
 			'fr': u"Afficher les coordonnées du curseur",
-			'jp': u"カーソル座標の表示位置",
+			'ja': u"カーソル座標の表示位置",
 			'zh': u"在左下角显示坐标值",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(coordinatePlacesTitle), None, "")
@@ -158,7 +158,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Unten links", 
 			'es': u"Abajo a la izquierda",
 			'fr': u"En bas à gauche",
-			'jp': u"左下",
+			'ja': u"左下",
 			'zh': u"左下角",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(bottomleftTitle), self.toggleShowCoordinates0, "")
@@ -172,7 +172,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Oben links", 
 			'es': u"Arriba a la izquierda",
 			'fr': u"En haut à gauche",
-			'jp': u"左上",
+			'ja': u"左上",
 			'zh': u"左上角",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(topleftTitle), self.toggleShowCoordinates1, "")
@@ -186,7 +186,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Entlang der Achsenlinien", 
 			'es': u"A lo largo de las líneas del eje", 
 			'fr': u"Le long des lignes d'axe",
-			'jp': u"軸線の脇",
+			'ja': u"軸線の脇",
 			'zh': u"沿轴线",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(alongAxisTitle), self.toggleShowCoordinates2, "")
@@ -200,7 +200,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Neben dem Mauszeiger", 
 			'es': u"Junto al cursor", 
 			'fr': u"À côté du curseur",
-			'jp': u"カーソルの脇",
+			'ja': u"カーソルの脇",
 			'zh': u"光标旁边",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(nextToCursorTitle), self.toggleShowCoordinates3, "")
@@ -217,7 +217,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u"Textgröße", 
 			'es': u"Tamaño del texto", 
 			'fr': u"Taille du texte",
-			'jp': u"フォントサイズ",
+			'ja': u"フォントサイズ",
 			'zh': u"文字大小",
 			}
 		menu = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(Glyphs.localize(textSizesTitle), None, "")
@@ -269,7 +269,7 @@ class ShowCrosshair(ReporterPlugin):
 			'de': u'Fadenkreuzeinstellungen',
 			'es': u'Ajustes de la cruz',
 			'fr': u'Paramètres du réticule',
-			'jp': u'カーソル照準設定',
+			'ja': u'カーソル照準設定',
 			'zh': u'✨准星线设置',
 			}))
 		subMenu = NSMenu.alloc().init()
@@ -307,7 +307,8 @@ class ShowCrosshair(ReporterPlugin):
 			mousePosition = self.mousePosition()
 			
 			# intersection markers:
-			handleSize = self.getHandleSize() * scale**-0.7
+			# handleSize = self.getHandleSize() * scale**-0.7
+			handleSize = self.getHandleSize()*0.7 / scale
 			try:
 				NSColor.separatorColor().set()
 			except:

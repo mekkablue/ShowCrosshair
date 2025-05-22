@@ -1,18 +1,18 @@
 # ShowCrosshair.glyphsReporter
 
-This is a plugin for the [Glyphs font editor](http://glyphsapp.com/) by Georg Seifert. After installation, it will add the menu item *View > Show Crosshair* (de: *Zeige Fadenkreuz*, es: *Mostrar cruz*, fr: *Afficher réticule*, jp: *カーソル照準*, zh: *✨显示准星线*). You can set a keyboard shortcut in *System Preferences > Keyboard > Shortcuts > App Shortcuts.*
+This is a plugin for the [Glyphs font editor](http://glyphsapp.com/) by Georg Seifert. After installation, it will add the menu item *View > Show Crosshair* (de: *Zeige Fadenkreuz*, es: *Mostrar cruz*, fr: *Afficher réticule*, ja: *カーソル照準*, zh: *✨显示准星线*). You can set a keyboard shortcut in *System Preferences > Keyboard > Shortcuts > App Shortcuts.*
 
 ![Crosshair](ShowCrosshair.png "Show Crosshair Screenshot")
 
-Depending on your crosshair setting, it shows a crosshair either always, or only while you drag your mouse pointer with the mouse button held down. Switch between states via the context menu: right click and select or deselect *Only While Dragging* (de: *Nur beim Ziehen*, es: *Solo al arrastrar*, fr: *Uniquement pendant le glissement*, jp: *ドラッグ中のみ表示*, zh: *仅在拖动时显示*).
+Depending on your crosshair setting, it shows a crosshair either always, or only while you drag your mouse pointer with the mouse button held down. Switch between states via the context menu: right click and select or deselect *Only While Dragging* (de: *Nur beim Ziehen*, es: *Solo al arrastrar*, fr: *Uniquement pendant le glissement*, ja: *ドラッグ中のみ表示*, zh: *仅在拖动时显示*).
 
-Toggle display of vertical axis when italic axis is set with the context menu option *Vertical Axis in Italic* (de: *Vertikale Achse in Kursivschrift*, es: *Eje vertical en cursiva*, fr: *Axe vertical en italique*, jp: *イタリック時の縦軸*, zh: *斜体纵轴*).
+Toggle display of vertical axis when italic axis is set with the context menu option *Vertical Axis in Italic* (de: *Vertikale Achse in Kursivschrift*, es: *Eje vertical en cursiva*, fr: *Axe vertical en italique*, ja: *イタリック時の縦軸*, zh: *斜体纵轴*).
 
-Toggle the display of measurements between intersections with the context menu option *Show Thicknesses* (de: *Dicken anzeigen*, es: *Mostrar grosores*, fr: *Afficher les épaisseurs*, jp: *縦横の太さを表示*, zh: *显示纵横坐标差*).
+Toggle the display of measurements between intersections with the context menu option *Show Thicknesses* (de: *Dicken anzeigen*, es: *Mostrar grosores*, fr: *Afficher les épaisseurs*, ja: *縦横の太さを表示*, zh: *显示纵横坐标差*).
 
 ![Crosshair options](ToggleCrosshairOptions.png "Toggling Crosshair options in the context menu")
 
-Display the crosshair coordinates by choosing one of four options under *Show Coordinates At* (dde: *Koordinaten anzeigen bei*, es: *Mostrar coordinados*, fr: *Afficher les coordonnées*, jp: *カーソル座標の表示位置*, zh: *在左下角显示坐标值*):
+Display the crosshair coordinates by choosing one of four options under *Show Coordinates At* (dde: *Koordinaten anzeigen bei*, es: *Mostrar coordinados*, fr: *Afficher les coordonnées*, ja: *カーソル座標の表示位置*, zh: *在左下角显示坐标值*):
 
 ![Coordinates in lower left corner](ToggleCoordinates.png "Coordinates are displayed in the lower left corner of the Edit view")
 
