@@ -296,15 +296,7 @@ class ShowCrosshair(ReporterPlugin):
 			prev = minY
 			ys = {}
 
-			italicAngle = 0
-			try:
-				# GLYPHS 3
-				storedAngle = master.defaultMetricForKey_("italic angle")
-				if storedAngle < 1000000:  # not-found constant
-					italicAngle = storedAngle
-			except:
-				# GLYPHS 2
-				italicAngle = master.italicAngle
+			italicAngle = master.italicAngle
 
 			verticalIntersections = layer.calculateIntersectionsStartPoint_endPoint_decompose_(
 				self.italicize(NSPoint(sliceX, minY), italicAngle=italicAngle, pivotalY=sliceY),
