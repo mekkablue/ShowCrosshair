@@ -14,6 +14,7 @@ import objc
 from GlyphsApp import Glyphs, MOUSEMOVED, MOUSEDOWN, MOUSEUP
 from GlyphsApp.plugins import ReporterPlugin
 from math import radians, tan, hypot
+from Foundation import NSZeroPoint
 from Cocoa import NSBezierPath, NSColor, NSImage, NSMenu, NSMenuItem, NSPoint, NSFont, NSFontAttributeName, NSForegroundColorAttributeName, NSAttributedString, NSSize, NSRect, NSMakeRect, NSLog, NSNotFound, NSOnState
 # to set context menu set state
 # from AppKit import NSBundle
@@ -408,12 +409,16 @@ class ShowCrosshair(ReporterPlugin):
 			crosshairPath.stroke()
 
 	def mousePosition(self):
+		if not self.controller:
+			return NSZeroPoint
 		view = self.controller.graphicView()
 		mousePosition = view.getActiveLocation_(Glyphs.currentEvent())
 		return mousePosition
 
 	@objc.python_method
 	def foregroundInViewCoords(self, layer=None):
+		if not self.controller:
+			return
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 
